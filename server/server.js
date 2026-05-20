@@ -1,0 +1,1231 @@
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
+const http = require("http");
+const { Server } = require("socket.io");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+
+require("dotenv").config();
+
+const User = require("./models/User");
+const Post = require("./models/Post");
+const Project = require("./models/Project");
+const Snippet = require("./models/Snippet");
+const Message = require("./models/Message");
+const CodeRoom = require("./models/CodeRoom");
+const Job = require("./models/Job");
+const Notification = require("./models/Notification");
+
+const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
+
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+app.use(express.json());
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const upload = multer({
+  dest: "uploads/",
+});
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((error) => console.log(error));
+
+app.get("/", (req, res) => {
+  res.send("Backend Running");
+});
+
+/* AUTH */
+
+app.post("/api/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    res.json({
+      message: "User Saved",
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error saving user",
+    });
+  }
+});
+
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid password",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      },
+    );
+
+    res.json({
+      message: "Login successful",
+      token,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+});
+
+/* USERS */
+
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+
+    res.json(users);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching users",
+    });
+  }
+});
+
+app.get("/api/users/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching profile",
+    });
+  }
+});
+
+app.put("/api/users/:id", async (req, res) => {
+  try {
+    const { bio, skills, githubUsername, location, role } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        bio,
+        skills,
+        githubUsername,
+        location,
+        role,
+      },
+      {
+        new: true,
+      },
+    ).select("-password");
+
+    res.json({
+      message: "Profile updated",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error updating profile",
+    });
+  }
+});
+
+app.post("/api/users/:id/avatar", upload.single("avatar"), async (req, res) => {
+  try {
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "devconnect_avatars",
+    });
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        avatar: result.secure_url,
+      },
+      {
+        new: true,
+      },
+    ).select("-password");
+
+    fs.unlinkSync(req.file.path);
+
+    res.json({
+      message: "Avatar uploaded",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error uploading avatar",
+    });
+  }
+});
+
+/* POSTS */
+
+app.post("/api/posts", upload.single("image"), async (req, res) => {
+  try {
+    const { content, tech, userId } = req.body;
+
+    let imageUrl = "";
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "devconnect_posts",
+      });
+
+      imageUrl = result.secure_url;
+      fs.unlinkSync(req.file.path);
+    }
+
+    const techArray =
+      typeof tech === "string"
+        ? tech
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : [];
+
+    const post = await Post.create({
+      content,
+      tech: techArray,
+      image: imageUrl,
+      user: userId,
+    });
+
+    const populatedPost = await Post.findById(post._id)
+      .populate("user", "name email avatar role")
+      .populate("comments.user", "name email avatar role");
+
+    res.json({
+      message: "Post created",
+      post: populatedPost,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error creating post",
+    });
+  }
+});
+
+app.get("/api/posts", async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .populate("user", "name email avatar role")
+      .populate("comments.user", "name email avatar role")
+      .sort({ createdAt: -1 });
+
+    res.json(posts);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching posts",
+    });
+  }
+});
+
+app.put("/api/posts/:id/like", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    const alreadyLiked = post.likes.some((id) => id.toString() === userId);
+
+    if (alreadyLiked) {
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
+    } else {
+      post.likes.push(userId);
+    }
+
+    await post.save();
+
+    if (!alreadyLiked && post.user.toString() !== userId) {
+  await Notification.create({
+    receiver: post.user,
+    sender: userId,
+    type: "like",
+    text: "liked your post",
+    link: "/dashboard",
+  });
+}
+
+    const updatedPost = await Post.findById(req.params.id)
+      .populate("user", "name email avatar role")
+      .populate("comments.user", "name email avatar role");
+
+    res.json({
+      message: alreadyLiked ? "Post unliked" : "Post liked",
+      post: updatedPost,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error liking post",
+    });
+  }
+});
+
+app.delete("/api/posts/:id", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    if (post.user.toString() !== userId) {
+      return res.status(403).json({
+        message: "You can delete only your own post",
+      });
+    }
+
+    await Post.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "Post deleted",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error deleting post",
+    });
+  }
+});
+
+app.post("/api/posts/:id/comment", async (req, res) => {
+  try {
+    const { userId, text } = req.body;
+
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    post.comments.push({
+      text,
+      user: userId,
+    });
+
+    await post.save();
+
+    if (post.user.toString() !== userId) {
+  await Notification.create({
+    receiver: post.user,
+    sender: userId,
+    type: "comment",
+    text: "commented on your post",
+    link: "/dashboard",
+  });
+}
+
+    const updatedPost = await Post.findById(req.params.id)
+      .populate("user", "name email avatar role")
+      .populate("comments.user", "name email avatar role");
+
+    res.json({
+      message: "Comment added",
+      post: updatedPost,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error adding comment",
+    });
+  }
+});
+
+/* PROJECTS */
+
+app.post("/api/projects", async (req, res) => {
+  try {
+    const { title, description, tech, githubLink, demoLink, userId } = req.body;
+
+    const project = await Project.create({
+      title,
+      description,
+      tech,
+      githubLink,
+      demoLink,
+      user: userId,
+    });
+
+    const populatedProject = await Project.findById(project._id).populate(
+      "user",
+      "name email avatar role",
+    );
+
+    res.json({
+      message: "Project created",
+      project: populatedProject,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error creating project",
+    });
+  }
+});
+
+app.get("/api/projects", async (req, res) => {
+  try {
+    const projects = await Project.find()
+      .populate("user", "name email avatar role")
+      .sort({ createdAt: -1 });
+
+    res.json(projects);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching projects",
+    });
+  }
+});
+
+app.delete("/api/projects/:id", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const project = await Project.findById(req.params.id);
+
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found",
+      });
+    }
+
+    if (project.user.toString() !== userId) {
+      return res.status(403).json({
+        message: "You can delete only your own project",
+      });
+    }
+
+    await Project.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "Project deleted",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error deleting project",
+    });
+  }
+});
+
+/* SNIPPETS */
+
+app.post("/api/snippets", async (req, res) => {
+  try {
+    const { title, code, language, userId } = req.body;
+
+    const snippet = await Snippet.create({
+      title,
+      code,
+      language,
+      user: userId,
+    });
+
+    const populatedSnippet = await Snippet.findById(snippet._id).populate(
+      "user",
+      "name email avatar role",
+    );
+
+    res.json({
+      message: "Snippet created",
+      snippet: populatedSnippet,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error creating snippet",
+    });
+  }
+});
+
+app.get("/api/snippets", async (req, res) => {
+  try {
+    const snippets = await Snippet.find()
+      .populate("user", "name email avatar role")
+      .sort({ createdAt: -1 });
+
+    res.json(snippets);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching snippets",
+    });
+  }
+});
+
+app.delete("/api/snippets/:id", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const snippet = await Snippet.findById(req.params.id);
+
+    if (!snippet) {
+      return res.status(404).json({
+        message: "Snippet not found",
+      });
+    }
+
+    if (snippet.user.toString() !== userId) {
+      return res.status(403).json({
+        message: "You can delete only your own snippet",
+      });
+    }
+
+    await Snippet.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "Snippet deleted",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error deleting snippet",
+    });
+  }
+});
+
+/* GITHUB */
+
+app.get("/api/github/:username", async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const profileResponse = await axios.get(
+      `https://api.github.com/users/${username}`,
+    );
+
+    const reposResponse = await axios.get(
+      `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`,
+    );
+
+    res.json({
+      profile: profileResponse.data,
+      repos: reposResponse.data,
+    });
+  } catch (error) {
+    console.log(error.message);
+
+    res.status(500).json({
+      message: "Error fetching GitHub data",
+    });
+  }
+});
+
+/* CONNECTIONS */
+
+app.post("/api/connections/request", async (req, res) => {
+  try {
+    const { senderId, receiverId } = req.body;
+
+    const receiver = await User.findById(receiverId);
+
+    if (!receiver) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    if (!receiver.connectionRequests.some((id) => id.toString() === senderId)) {
+      receiver.connectionRequests.push(senderId);
+      await receiver.save();
+
+      await Notification.create({
+        receiver: receiverId,
+        sender: senderId,
+        type: "connection",
+        text: "sent you a connection request",
+        link: "/connections",
+      });
+    }
+
+    res.json({
+      message: "Request sent",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error sending request",
+    });
+  }
+});
+
+app.get("/api/connections/requests/:userId", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).populate(
+      "connectionRequests",
+      "name email avatar role",
+    );
+
+    res.json(user.connectionRequests);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching requests",
+    });
+  }
+});
+
+app.post("/api/connections/accept", async (req, res) => {
+  try {
+    const { userId, senderId } = req.body;
+
+    const user = await User.findById(userId);
+    const sender = await User.findById(senderId);
+
+    if (!user.connections.some((id) => id.toString() === senderId)) {
+      user.connections.push(senderId);
+    }
+
+    if (!sender.connections.some((id) => id.toString() === userId)) {
+      sender.connections.push(userId);
+    }
+
+    user.connectionRequests = user.connectionRequests.filter(
+      (id) => id.toString() !== senderId,
+    );
+
+    await user.save();
+    await sender.save();
+
+    res.json({
+      message: "Connection accepted",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error accepting request",
+    });
+  }
+});
+
+app.get("/api/connections/:userId", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).populate(
+      "connections",
+      "name email avatar role",
+    );
+
+    const uniqueConnections = user.connections.filter(
+      (person, index, self) =>
+        index ===
+        self.findIndex((p) => p._id.toString() === person._id.toString()),
+    );
+
+    res.json(uniqueConnections);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching connections",
+    });
+  }
+});
+
+app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
+  try {
+    const { userId, profileId } = req.params;
+
+    const currentUser = await User.findById(userId);
+
+    const profileUser = await User.findById(profileId).populate(
+      "connections",
+      "name email avatar role",
+    );
+
+    const mutuals = profileUser.connections.filter((connection) =>
+      currentUser.connections.some(
+        (id) => id.toString() === connection._id.toString(),
+      ),
+    );
+
+    const uniqueMutuals = mutuals.filter(
+      (person, index, self) =>
+        index ===
+        self.findIndex((p) => p._id.toString() === person._id.toString()),
+    );
+
+    res.json({
+      connectionCount: profileUser.connections.length,
+      mutuals: uniqueMutuals,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching mutual connections",
+    });
+  }
+})
+
+/* MESSAGES */
+
+/* UNREAD MESSAGE COUNT - KEEP THIS FIRST */
+app.get("/api/messages/unread-count/:userId", async (req, res) => {
+  try {
+    const count = await Message.countDocuments({
+      receiver: req.params.userId,
+      isRead: false,
+    });
+
+    res.json({ count });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching unread message count",
+    });
+  }
+});
+
+/* MARK CONVERSATION AS READ - KEEP THIS SECOND */
+app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
+  try {
+    await Message.updateMany(
+      {
+        receiver: req.params.userId,
+        sender: req.params.senderId,
+      },
+      {
+        isRead: true,
+      }
+    );
+
+    res.json({
+      message: "Messages marked as read",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error marking messages as read",
+    });
+  }
+});
+/* MESSAGES */
+/* GET MESSAGES BETWEEN TWO USERS - KEEP THIS LAST */
+app.get("/api/messages/:user1/:user2", async (req, res) => {
+  try {
+    const { user1, user2 } = req.params;
+
+    const messages = await Message.find({
+      $or: [
+        { sender: user1, receiver: user2 },
+        { sender: user2, receiver: user1 },
+      ],
+    })
+      .populate("sender", "name email avatar role")
+      .populate("receiver", "name email avatar role")
+      .sort({ createdAt: 1 });
+
+    res.json(messages);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching messages",
+    });
+  }
+});
+
+/* CODE ROOMS */
+
+app.post("/api/code-rooms", async (req, res) => {
+  try {
+    const { title, description, language, difficulty, userId } = req.body;
+
+    const roomId = title.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
+
+    const room = await CodeRoom.create({
+      roomId,
+      title,
+      description,
+      language,
+      difficulty,
+      createdBy: userId,
+    });
+
+    res.json({
+      message: "Code room created",
+      room,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error creating code room",
+    });
+  }
+});
+
+app.get("/api/code-rooms/:roomId", async (req, res) => {
+  try {
+    const room = await CodeRoom.findOne({
+      roomId: req.params.roomId,
+    }).populate("createdBy", "name email avatar role");
+
+    if (!room) {
+      return res.status(404).json({
+        message: "Room not found",
+      });
+    }
+
+    res.json(room);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching room",
+    });
+  }
+});
+
+/* JOBS */
+
+app.post("/api/jobs", async (req, res) => {
+  try {
+    const {
+      title,
+      company,
+      location,
+      jobType,
+      skills,
+      description,
+      recruiterId,
+    } = req.body;
+
+    const job = await Job.create({
+      title,
+      company,
+      location,
+      jobType,
+      skills,
+      description,
+      recruiter: recruiterId,
+    });
+
+    const populatedJob = await Job.findById(job._id)
+      .populate("recruiter", "name email avatar role")
+      .populate("applicants", "name email avatar role skills");
+
+    res.json({
+      message: "Job created",
+      job: populatedJob,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error creating job",
+    });
+  }
+});
+
+app.get("/api/jobs", async (req, res) => {
+  try {
+    const jobs = await Job.find()
+      .populate("recruiter", "name email avatar role")
+      .populate("applicants", "name email avatar role skills")
+      .sort({ createdAt: -1 });
+
+    res.json(jobs);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching jobs",
+    });
+  }
+});
+
+app.put("/api/jobs/:id/apply", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const job = await Job.findById(req.params.id);
+
+    if (!job) {
+      return res.status(404).json({
+        message: "Job not found",
+      });
+    }
+
+    const alreadyApplied = job.applicants.some(
+      (id) => id.toString() === userId,
+    );
+
+    if (!alreadyApplied) {
+      job.applicants.push(userId);
+      await job.save();
+
+      if (!alreadyApplied) {
+  await Notification.create({
+    receiver: job.recruiter,
+    sender: userId,
+    type: "job",
+    text: "applied to your job post",
+    link: "/recruiter",
+  });
+}
+    }
+
+    const updatedJob = await Job.findById(req.params.id)
+      .populate("recruiter", "name email avatar role")
+      .populate("applicants", "name email avatar role skills");
+
+    res.json({
+      message: alreadyApplied ? "Already applied" : "Applied successfully",
+      job: updatedJob,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error applying to job",
+    });
+  }
+});
+
+app.delete("/api/jobs/:id", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const job = await Job.findById(req.params.id);
+
+    if (!job) {
+      return res.status(404).json({
+        message: "Job not found",
+      });
+    }
+
+    if (job.recruiter.toString() !== userId) {
+      return res.status(403).json({
+        message: "You can delete only your own job",
+      });
+    }
+
+    await Job.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "Job deleted",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error deleting job",
+    });
+  }
+});
+
+app.post("/api/direct-message", async (req, res) => {
+  try {
+    const { senderId, receiverId, text } = req.body;
+
+    const message = await Message.create({
+      sender: senderId,
+      receiver: receiverId,
+      text,
+    });
+
+    const populatedMessage = await Message.findById(message._id)
+      .populate("sender", "name email avatar role")
+      .populate("receiver", "name email avatar role");
+
+    res.json({
+      message: "Message sent",
+      data: populatedMessage,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error sending message",
+    });
+  }
+});
+
+app.get("/api/notifications/:userId", async (req, res) => {
+  try {
+    const notifications = await Notification.find({
+      receiver: req.params.userId,
+    })
+      .populate("sender", "name avatar role")
+      .sort({ createdAt: -1 });
+
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching notifications",
+    });
+  }
+});
+
+app.put("/api/notifications/read/:userId", async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { receiver: req.params.userId },
+      { isRead: true },
+    );
+
+    res.json({
+      message: "Notifications marked as read",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating notifications",
+    });
+  }
+});
+
+/* UNREAD MESSAGE COUNT */
+
+app.get("/api/messages/unread-count/:userId", async (req, res) => {
+  try {
+    const count = await Message.countDocuments({
+      receiver: req.params.userId,
+      isRead: false,
+    });
+
+    res.json({ count });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching unread message count",
+    });
+  }
+});
+
+/* MARK CONVERSATION AS READ */
+
+app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
+  try {
+    await Message.updateMany(
+      {
+        receiver: req.params.userId,
+        sender: req.params.senderId,
+      },
+      {
+        isRead: true,
+      }
+    );
+
+    res.json({
+      message: "Messages marked as read",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error marking messages as read",
+    });
+  }
+});
+
+/* UNREAD NOTIFICATION COUNT */
+
+app.get("/api/notifications/unread-count/:userId", async (req, res) => {
+  try {
+    const count = await Notification.countDocuments({
+      receiver: req.params.userId,
+      isRead: false,
+    });
+
+    res.json({ count });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching unread notification count",
+    });
+  }
+});
+
+
+/* SOCKET.IO */
+
+const onlineUsers = new Map();
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("user-online", (userId) => {
+    onlineUsers.set(userId, socket.id);
+
+    io.emit("online-users", Array.from(onlineUsers.keys()));
+  });
+
+  socket.on("send-message", async (data) => {
+    const message = await Message.create({
+      sender: data.sender,
+      receiver: data.receiver,
+      text: data.text,
+    });
+
+    socket.on("typing", ({ senderId, receiverId, senderName }) => {
+  io.emit("user-typing", {
+    senderId,
+    receiverId,
+    senderName,
+  });
+});
+
+socket.on("stop-typing", ({ senderId, receiverId }) => {
+  io.emit("user-stop-typing", {
+    senderId,
+    receiverId,
+  });
+});
+
+    const populatedMessage = await Message.findById(message._id)
+      .populate("sender", "name email avatar role")
+      .populate("receiver", "name email avatar role");
+
+    io.emit("receive-message", populatedMessage);
+  });
+
+  socket.on("join-room", (roomId) => {
+    socket.join(roomId);
+  });
+
+  socket.on("code-change", ({ roomId, code }) => {
+    socket.to(roomId).emit("receive-code", code);
+  });
+
+  socket.on("language-change", ({ roomId, language }) => {
+    socket.to(roomId).emit("receive-language", language);
+  });
+
+  socket.on("disconnect", () => {
+    let disconnectedUserId = null;
+
+    for (const [userId, socketId] of onlineUsers.entries()) {
+      if (socketId === socket.id) {
+        disconnectedUserId = userId;
+        break;
+      }
+    }
+
+    if (disconnectedUserId) {
+      onlineUsers.delete(disconnectedUserId);
+    }
+
+    io.emit("online-users", Array.from(onlineUsers.keys()));
+
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+/* SERVER */
+
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  console.log(`Server Started on ${PORT}`);
+});
