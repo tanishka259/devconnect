@@ -10,7 +10,7 @@ function Notifications() {
 
   const fetchNotifications = async () => {
     const response = await axios.get(
-      `http://localhost:5000/api/notifications/${user._id}`
+      `https://devconnect-api-hwvw.onrender.com/api/notifications/${user._id}`
     );
 
     setNotifications(response.data);
@@ -18,7 +18,7 @@ function Notifications() {
 
   const markAsRead = async () => {
     await axios.put(
-      `http://localhost:5000/api/notifications/read/${user._id}`
+      `https://devconnect-api-hwvw.onrender.com/api/notifications/read/${user._id}`
     );
 
     fetchNotifications();

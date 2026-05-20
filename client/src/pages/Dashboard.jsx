@@ -9,7 +9,7 @@ function Dashboard() {
   const [posts, setPosts] = useState([]);
 
   const fetchPosts = async () => {
-    const response = await axios.get("http://localhost:5000/api/posts");
+    const response = await axios.get("https://devconnect-api-hwvw.onrender.com/api/posts");
     setPosts(response.data);
   };
 

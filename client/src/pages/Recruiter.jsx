@@ -19,7 +19,7 @@ function Recruiter() {
   const [messageText, setMessageText] = useState({});
 
   const fetchJobs = async () => {
-    const response = await axios.get("http://localhost:5000/api/jobs");
+    const response = await axios.get("https://devconnect-api-hwvw.onrender.com/api/jobs");
     setJobs(response.data);
   };
 
@@ -37,7 +37,7 @@ function Recruiter() {
       .map((skill) => skill.trim())
       .filter((skill) => skill !== "");
 
-    await axios.post("http://localhost:5000/api/jobs", {
+    await axios.post("https://devconnect-api-hwvw.onrender.com/api/jobs", {
       title,
       company,
       location,
@@ -59,7 +59,7 @@ function Recruiter() {
 
   const handleApply = async (jobId) => {
     const response = await axios.put(
-      `http://localhost:5000/api/jobs/${jobId}/apply`,
+      `https://devconnect-api-hwvw.onrender.com/api/jobs/${jobId}/apply`,
       {
         userId: user._id,
       }
@@ -70,7 +70,7 @@ function Recruiter() {
   };
 
   const handleDelete = async (jobId) => {
-    await axios.delete(`http://localhost:5000/api/jobs/${jobId}`, {
+    await axios.delete(`https://devconnect-api-hwvw.onrender.com/api/jobs/${jobId}`, {
       data: {
         userId: user._id,
       },
@@ -86,7 +86,7 @@ function Recruiter() {
       return alert("Please write a message");
     }
 
-    await axios.post("http://localhost:5000/api/direct-message", {
+    await axios.post("https://devconnect-api-hwvw.onrender.com/api/direct-message", {
       senderId: user._id,
       receiverId,
       text,

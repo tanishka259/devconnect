@@ -20,7 +20,7 @@ function CreatePost({ onPostCreated }) {
       formData.append("image", image);
     }
 
-    await axios.post("http://localhost:5000/api/posts", formData);
+    await axios.post("https://devconnect-api-hwvw.onrender.com/api/posts", formData);
 
     setContent("");
     setTechInput("");

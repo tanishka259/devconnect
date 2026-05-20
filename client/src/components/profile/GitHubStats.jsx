@@ -8,7 +8,7 @@ function GitHubStats({ username }) {
     if (!username) return;
 
     const response = await axios.get(
-      `http://localhost:5000/api/github/${username}`
+      `https://devconnect-api-hwvw.onrender.com/api/github/${username}`
     );
 
     setGithubData(response.data);

@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 
 import MainLayout from "../layouts/MainLayout";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://devconnect-api-hwvw.onrender.com");
 
 function Messages() {
   const currentUser = JSON.parse(localStorage.getItem("user"));
@@ -19,7 +19,7 @@ function Messages() {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/connections/${currentUser._id}`,
+        `https://devconnect-api-hwvw.onrender.com/api/connections/${currentUser._id}`,
       );
 
       const uniqueUsers = response.data.filter(
@@ -36,7 +36,7 @@ function Messages() {
   const fetchMessages = async (userId) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/messages/${currentUser._id}/${userId}`,
+        `https://devconnect-api-hwvw.onrender.com/api/messages/${currentUser._id}/${userId}`,
       );
 
       setMessages(response.data);
@@ -98,7 +98,7 @@ function Messages() {
     await fetchMessages(user._id);
 
     await axios.put(
-      `http://localhost:5000/api/messages/read/${currentUser._id}/${user._id}`,
+      `https://devconnect-api-hwvw.onrender.com/api/messages/read/${currentUser._id}/${user._id}`,
     );
   };
 

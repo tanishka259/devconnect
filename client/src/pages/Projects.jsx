@@ -14,7 +14,7 @@ function Projects() {
   const [demoLink, setDemoLink] = useState("");
 
   const fetchProjects = async () => {
-    const response = await axios.get("http://localhost:5000/api/projects");
+    const response = await axios.get("https://devconnect-api-hwvw.onrender.com/api/projects");
     setProjects(response.data);
   };
 
@@ -32,7 +32,7 @@ function Projects() {
       .map((item) => item.trim())
       .filter((item) => item !== "");
 
-    await axios.post("http://localhost:5000/api/projects", {
+    await axios.post("https://devconnect-api-hwvw.onrender.com/api/projects", {
       title,
       description,
       tech: techArray,
@@ -51,7 +51,7 @@ function Projects() {
   };
 
   const handleDeleteProject = async (projectId) => {
-    await axios.delete(`http://localhost:5000/api/projects/${projectId}`, {
+    await axios.delete(`https://devconnect-api-hwvw.onrender.com/api/projects/${projectId}`, {
       data: {
         userId: user._id,
       },

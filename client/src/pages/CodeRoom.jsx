@@ -5,7 +5,7 @@ import axios from "axios";
 
 import MainLayout from "../layouts/MainLayout";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://devconnect-api-hwvw.onrender.com");
 
 function CodeRoom() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -46,7 +46,7 @@ function CodeRoom() {
       return alert("Room title is required");
     }
 
-    const response = await axios.post("http://localhost:5000/api/code-rooms", {
+    const response = await axios.post("https://devconnect-api-hwvw.onrender.com/api/code-rooms", {
       title,
       description,
       language,
@@ -67,7 +67,7 @@ function CodeRoom() {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/code-rooms/${roomId}`,
+        `https://devconnect-api-hwvw.onrender.com/api/code-rooms/${roomId}`,
       );
 
       socket.emit("join-room", roomId);

@@ -20,10 +20,10 @@ function Profile() {
   const fetchProfile = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/users/${storedUser._id}`,
+        `https://devconnect-api-hwvw.onrender.com/api/users/${storedUser._id}`,
       );
 
-      const postsResponse = await axios.get("http://localhost:5000/api/posts");
+      const postsResponse = await axios.get("https://devconnect-api-hwvw.onrender.com/api/posts");
 
       setProfile(response.data);
 
@@ -53,7 +53,7 @@ function Profile() {
         .filter((skill) => skill !== "");
 
       const response = await axios.put(
-        `http://localhost:5000/api/users/${storedUser._id}`,
+        `https://devconnect-api-hwvw.onrender.com/api/users/${storedUser._id}`,
         {
           bio,
           skills: skillsArray,
@@ -84,7 +84,7 @@ function Profile() {
     formData.append("avatar", file);
 
     const response = await axios.post(
-      `http://localhost:5000/api/users/${storedUser._id}/avatar`,
+      `https://devconnect-api-hwvw.onrender.com/api/users/${storedUser._id}/avatar`,
       formData,
     );
 

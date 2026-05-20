@@ -34,11 +34,11 @@ function Sidebar() {
     if (!user?._id) return;
 
     const notificationResponse = await axios.get(
-      `http://localhost:5000/api/notifications/unread-count/${user._id}`,
+      `https://devconnect-api-hwvw.onrender.com/api/notifications/unread-count/${user._id}`,
     );
 
     const messageResponse = await axios.get(
-      `http://localhost:5000/api/messages/unread-count/${user._id}`,
+      `https://devconnect-api-hwvw.onrender.com/api/messages/unread-count/${user._id}`,
     );
 
     setNotificationCount(notificationResponse.data.count);

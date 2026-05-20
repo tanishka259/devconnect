@@ -16,7 +16,7 @@ function PostCard({ post, onLikeUpdated }) {
   });
 
   const handleLike = async () => {
-    await axios.put(`http://localhost:5000/api/posts/${post._id}/like`, {
+    await axios.put(`https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}/like`, {
       userId: user._id,
     });
 
@@ -24,7 +24,7 @@ function PostCard({ post, onLikeUpdated }) {
   };
 
   const handleDelete = async () => {
-    await axios.delete(`http://localhost:5000/api/posts/${post._id}`, {
+    await axios.delete(`https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}`, {
       data: { userId: user._id },
     });
 
@@ -34,7 +34,7 @@ function PostCard({ post, onLikeUpdated }) {
   const handleComment = async () => {
     if (!commentText.trim()) return;
 
-    await axios.post(`http://localhost:5000/api/posts/${post._id}/comment`, {
+    await axios.post(`https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}/comment`, {
       userId: user._id,
       text: commentText,
     });

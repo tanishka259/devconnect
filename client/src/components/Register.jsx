@@ -13,7 +13,7 @@ function Register() {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/register", {
+      await axios.post("https://devconnect-api-hwvw.onrender.com/api/register", {
         name,
         email,
         password,

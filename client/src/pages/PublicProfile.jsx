@@ -28,23 +28,23 @@ function PublicProfile() {
   const fetchPublicProfile = async () => {
     try {
       const userResponse = await axios.get(
-        `http://localhost:5000/api/users/${id}`
+        `https://devconnect-api-hwvw.onrender.com/api/users/${id}`
       );
 
       const postsResponse = await axios.get(
-        "http://localhost:5000/api/posts"
+        "https://devconnect-api-hwvw.onrender.com/api/posts"
       );
 
       const projectsResponse = await axios.get(
-        "http://localhost:5000/api/projects"
+        "https://devconnect-api-hwvw.onrender.com/api/projects"
       );
 
       const snippetsResponse = await axios.get(
-        "http://localhost:5000/api/snippets"
+        "https://devconnect-api-hwvw.onrender.com/api/snippets"
       );
 
       const mutualResponse = await axios.get(
-        `http://localhost:5000/api/connections/mutual/${currentUser._id}/${id}`
+        `https://devconnect-api-hwvw.onrender.com/api/connections/mutual/${currentUser._id}/${id}`
       );
 
       setProfile(userResponse.data);

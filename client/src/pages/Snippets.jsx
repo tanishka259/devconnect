@@ -12,7 +12,7 @@ function Snippets() {
   const [code, setCode] = useState("");
 
   const fetchSnippets = async () => {
-    const response = await axios.get("http://localhost:5000/api/snippets");
+    const response = await axios.get("https://devconnect-api-hwvw.onrender.com/api/snippets");
     setSnippets(response.data);
   };
 
@@ -25,7 +25,7 @@ function Snippets() {
       return alert("Title and code are required");
     }
 
-    await axios.post("http://localhost:5000/api/snippets", {
+    await axios.post("https://devconnect-api-hwvw.onrender.com/api/snippets", {
       title,
       language,
       code,
@@ -40,7 +40,7 @@ function Snippets() {
   };
 
   const handleDeleteSnippet = async (snippetId) => {
-    await axios.delete(`http://localhost:5000/api/snippets/${snippetId}`, {
+    await axios.delete(`https://devconnect-api-hwvw.onrender.com/api/snippets/${snippetId}`, {
       data: {
         userId: user._id,
       },

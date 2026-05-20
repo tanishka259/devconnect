@@ -10,10 +10,10 @@ function Connections() {
   const [sentRequests, setSentRequests] = useState([]);
 
   const fetchUsers = async () => {
-    const allUsersResponse = await axios.get("http://localhost:5000/api/users");
+    const allUsersResponse = await axios.get("https://devconnect-api-hwvw.onrender.com/api/users");
 
     const connectionsResponse = await axios.get(
-      `http://localhost:5000/api/connections/${user._id}`,
+      `https://devconnect-api-hwvw.onrender.com/api/connections/${user._id}`,
     );
 
     const connectedIds = connectionsResponse.data.map((u) => u._id);
@@ -26,7 +26,7 @@ function Connections() {
   };
   const fetchRequests = async () => {
     const response = await axios.get(
-      `http://localhost:5000/api/connections/requests/${user._id}`,
+      `https://devconnect-api-hwvw.onrender.com/api/connections/requests/${user._id}`,
     );
 
     setRequests(response.data);
@@ -38,7 +38,7 @@ function Connections() {
   }, []);
 
   const sendRequest = async (receiverId) => {
-    await axios.post("http://localhost:5000/api/connections/request", {
+    await axios.post("https://devconnect-api-hwvw.onrender.com/api/connections/request", {
       senderId: user._id,
       receiverId,
     });
@@ -47,7 +47,7 @@ function Connections() {
   };
 
   const acceptRequest = async (senderId) => {
-    await axios.post("http://localhost:5000/api/connections/accept", {
+    await axios.post("https://devconnect-api-hwvw.onrender.com/api/connections/accept", {
       userId: user._id,
       senderId,
     });

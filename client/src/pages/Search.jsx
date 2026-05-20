@@ -14,8 +14,8 @@ function Search() {
   const [posts, setPosts] = useState([]);
 
   const fetchSearch = async () => {
-    const usersResponse = await axios.get("http://localhost:5000/api/users");
-    const postsResponse = await axios.get("http://localhost:5000/api/posts");
+    const usersResponse = await axios.get("https://devconnect-api-hwvw.onrender.com/api/users");
+    const postsResponse = await axios.get("https://devconnect-api-hwvw.onrender.com/api/posts");
 
     const lower = q.toLowerCase();
 
