@@ -51,7 +51,7 @@ function Profile() {
       setAiLoading(true);
 
       const response = await axios.post(
-        `YOUR_BACKEND_URL/api/ai/portfolio-review/${storedUser._id}`,
+        `https://devconnect-api.onrender.com/api/ai/portfolio-review/${user._id}`
       );
 
       setAiReview(response.data.review);

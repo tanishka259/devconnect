@@ -102,7 +102,7 @@ Frontend:
 https://devconnect-lime.vercel.app
 
 Backend API:
-https://your-render-backend-url.onrender.com
+https://devconnect-api-hwvw.onrender.com
 
 📌 Future Improvements
 Group chats
