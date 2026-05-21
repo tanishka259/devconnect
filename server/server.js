@@ -21,11 +21,11 @@ const CodeRoom = require("./models/CodeRoom");
 const Job = require("./models/Job");
 const Notification = require("./models/Notification");
 
-const OpenAI = require("openai");
+// const OpenAI = require("openai");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
 const app = express();
 const server = http.createServer(app);
@@ -40,7 +40,7 @@ const io = new Server(server, {
 app.use(
   cors({
     origin: "*",
-  })
+  }),
 );
 app.use(express.json());
 
@@ -329,14 +329,14 @@ app.put("/api/posts/:id/like", async (req, res) => {
     await post.save();
 
     if (!alreadyLiked && post.user.toString() !== userId) {
-  await Notification.create({
-    receiver: post.user,
-    sender: userId,
-    type: "like",
-    text: "liked your post",
-    link: "/dashboard",
-  });
-}
+      await Notification.create({
+        receiver: post.user,
+        sender: userId,
+        type: "like",
+        text: "liked your post",
+        link: "/dashboard",
+      });
+    }
 
     const updatedPost = await Post.findById(req.params.id)
       .populate("user", "name email avatar role")
@@ -407,14 +407,14 @@ app.post("/api/posts/:id/comment", async (req, res) => {
     await post.save();
 
     if (post.user.toString() !== userId) {
-  await Notification.create({
-    receiver: post.user,
-    sender: userId,
-    type: "comment",
-    text: "commented on your post",
-    link: "/dashboard",
-  });
-}
+      await Notification.create({
+        receiver: post.user,
+        sender: userId,
+        type: "comment",
+        text: "commented on your post",
+        link: "/dashboard",
+      });
+    }
 
     const updatedPost = await Post.findById(req.params.id)
       .populate("user", "name email avatar role")
@@ -767,7 +767,7 @@ app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
       message: "Error fetching mutual connections",
     });
   }
-})
+});
 
 /* MESSAGES */
 
@@ -799,7 +799,7 @@ app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
       },
       {
         isRead: true,
-      }
+      },
     );
 
     res.json({
@@ -970,14 +970,14 @@ app.put("/api/jobs/:id/apply", async (req, res) => {
       await job.save();
 
       if (!alreadyApplied) {
-  await Notification.create({
-    receiver: job.recruiter,
-    sender: userId,
-    type: "job",
-    text: "applied to your job post",
-    link: "/recruiter",
-  });
-}
+        await Notification.create({
+          receiver: job.recruiter,
+          sender: userId,
+          type: "job",
+          text: "applied to your job post",
+          link: "/recruiter",
+        });
+      }
     }
 
     const updatedJob = await Job.findById(req.params.id)
@@ -1119,7 +1119,7 @@ app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
       },
       {
         isRead: true,
-      }
+      },
     );
 
     res.json({
@@ -1165,51 +1165,114 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
       user: req.params.userId,
     });
 
-    const prompt = `
-Review this developer portfolio.
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
-Name: ${user.name}
-Role: ${user.role}
-Bio: ${user.bio}
-Skills: ${user.skills?.join(", ")}
-GitHub Username: ${user.githubUsername}
-Location: ${user.location}
+    let score = 5;
 
-Projects:
-${projects
-  .map(
-    (project) =>
-      `- ${project.title}: ${project.description}. Tech: ${project.tech?.join(", ")}`
-  )
-  .join("\n")}
+    if (user.bio && user.bio.length > 40) score += 1;
+    if (user.skills && user.skills.length >= 3) score += 1;
+    if (user.githubUsername) score += 1;
+    if (projects.length >= 2) score += 1;
+    if (snippets.length >= 2) score += 1;
 
-Code Snippets:
-${snippets
-  .map((snippet) => `- ${snippet.title} (${snippet.language})`)
-  .join("\n")}
+    if (score > 10) score = 10;
 
-Give response in this format:
-1. Overall Rating out of 10
-2. Strengths
-3. Weak Areas
-4. Profile Improvement Tips
-5. Project Improvement Tips
-6. Recruiter Impression
+    const strengths = [];
+
+    if (user.skills?.length > 0) {
+      strengths.push(`You have listed relevant skills like ${user.skills.slice(0, 4).join(", ")}.`);
+    }
+
+    if (projects.length > 0) {
+      strengths.push(`You have ${projects.length} project(s), which helps recruiters understand your practical work.`);
+    }
+
+    if (snippets.length > 0) {
+      strengths.push(`You have added ${snippets.length} code snippet(s), showing your coding practice.`);
+    }
+
+    if (user.githubUsername) {
+      strengths.push("Your GitHub profile is connected, which improves your technical credibility.");
+    }
+
+    if (strengths.length === 0) {
+      strengths.push("Your profile has a good starting structure, but it needs more details.");
+    }
+
+    const weakAreas = [];
+
+    if (!user.bio || user.bio.length < 40) {
+      weakAreas.push("Your bio is short. Add a clearer introduction about your role, goals, and tech interests.");
+    }
+
+    if (!user.skills || user.skills.length < 3) {
+      weakAreas.push("Add at least 3–5 strong technical skills.");
+    }
+
+    if (!user.githubUsername) {
+      weakAreas.push("Connect your GitHub username to show repositories and coding activity.");
+    }
+
+    if (projects.length < 2) {
+      weakAreas.push("Add more projects with description, tech stack, GitHub link, and live demo.");
+    }
+
+    if (snippets.length < 2) {
+      weakAreas.push("Add more code snippets to showcase your coding style.");
+    }
+
+    if (weakAreas.length === 0) {
+      weakAreas.push("Your profile is strong. Focus on polishing project descriptions and adding live demos.");
+    }
+
+    const projectTips =
+      projects.length > 0
+        ? projects
+            .slice(0, 3)
+            .map(
+              (project, index) =>
+                `${index + 1}. ${project.title}: Add clear problem statement, features, tech stack, GitHub link, and live demo if missing.`
+            )
+            .join("\n")
+        : "Add at least 2 portfolio-level projects such as MERN social app, dashboard, AI tool, or real-time chat app.";
+
+    const review = `
+Overall Rating: ${score}/10
+
+Strengths:
+${strengths.map((item) => `- ${item}`).join("\n")}
+
+Weak Areas:
+${weakAreas.map((item) => `- ${item}`).join("\n")}
+
+Profile Improvement Tips:
+- Write a strong 3–4 line bio explaining who you are, what you build, and what technologies you use.
+- Keep your role clear, for example: MERN Stack Developer, Frontend Developer, or Full Stack Developer.
+- Add your strongest skills first.
+- Keep your GitHub updated with clean README files.
+
+Project Improvement Tips:
+${projectTips}
+
+Recruiter Impression:
+A recruiter will understand your profile better if your bio, skills, GitHub, and projects clearly show what you can build. Keep your projects polished, add live links, and explain your contribution clearly.
+
+Final Suggestion:
+Focus on 2–3 strong projects with clean UI, proper README, screenshots, live demo, and GitHub links. This will make your portfolio much stronger.
 `;
 
-    const response = await openai.responses.create({
-      model: "gpt-5.5-instant",
-      input: prompt,
-    });
-
     res.json({
-      review: response.output_text,
+      review,
     });
   } catch (error) {
     console.log(error);
 
     res.status(500).json({
-      message: "AI portfolio review failed",
+      message: "Free portfolio review failed",
     });
   }
 });
@@ -1235,19 +1298,19 @@ io.on("connection", (socket) => {
     });
 
     socket.on("typing", ({ senderId, receiverId, senderName }) => {
-  io.emit("user-typing", {
-    senderId,
-    receiverId,
-    senderName,
-  });
-});
+      io.emit("user-typing", {
+        senderId,
+        receiverId,
+        senderName,
+      });
+    });
 
-socket.on("stop-typing", ({ senderId, receiverId }) => {
-  io.emit("user-stop-typing", {
-    senderId,
-    receiverId,
-  });
-});
+    socket.on("stop-typing", ({ senderId, receiverId }) => {
+      io.emit("user-stop-typing", {
+        senderId,
+        receiverId,
+      });
+    });
 
     const populatedMessage = await Message.findById(message._id)
       .populate("sender", "name email avatar role")
