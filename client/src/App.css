@@ -6,9 +6,9 @@
 }
 
 body {
-  background: #f7f4ff;
-  color: #44315f;
-  overflow-x: hidden;
+  background: var(--bg-main);
+  color: var(--text-main);
+  transition: all 0.3s ease;
 }
 
 .app-layout {
@@ -2256,4 +2256,784 @@ body {
 .add-post-page {
   width: 100%;
   max-width: 760px;
+}
+
+/* AI PORTFOLIO REVIEW */
+
+.ai-review-card {
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 30px;
+  padding: 28px;
+  box-shadow: 0 12px 35px rgba(180, 160, 255, 0.16);
+}
+
+.ai-review-card h2 {
+  color: #44315f;
+  margin-bottom: 10px;
+}
+
+.ai-review-card p {
+  color: #7b6d96;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.ai-review-card button {
+  border: none;
+  padding: 14px 22px;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #a78bfa, #f9a8d4);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.ai-review-card button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ai-review-output {
+  margin-top: 20px;
+  white-space: pre-wrap;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 18px;
+  border-radius: 20px;
+  color: #44315f;
+  line-height: 1.7;
+  font-family: inherit;
+}
+
+.theme-switcher {
+  border: none;
+  outline: none;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #44315f;
+  font-weight: 800;
+}
+
+/* DEFAULT BLACK THEME */
+
+body.theme-black {
+  --bg-main: #0f0f12;
+  --bg-card: #17171c;
+  --bg-soft: #22222a;
+
+  --text-main: #ffffff;
+  --text-soft: #b6b6c7;
+
+  --primary: #7c3aed;
+  --secondary: #9333ea;
+
+  --border: #2d2d38;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+/* =========================================================
+   DEVCONNECT 12 THEME SYSTEM - FINAL OVERRIDE
+   Paste-safe: this section overrides older hardcoded colors.
+   Default theme should be controlled by ThemeSwitcher.jsx as "black".
+   ========================================================= */
+
+/* fallback variables */
+:root {
+  --bg-main: #0f0f12;
+  --bg-card: rgba(23, 23, 28, 0.88);
+  --bg-soft: rgba(34, 34, 42, 0.9);
+  --text-main: #ffffff;
+  --text-soft: #b6b6c7;
+  --primary: #7c3aed;
+  --secondary: #9333ea;
+  --accent: #f9a8d4;
+  --border: rgba(255,255,255,0.12);
+  --shadow: rgba(0, 0, 0, 0.45);
+  --tag-bg: rgba(124, 58, 237, 0.18);
+  --tag-text: #c4b5fd;
+  --danger-bg: #fee2e2;
+  --danger-text: #dc2626;
+}
+
+/* 12 THEMES */
+
+body.theme-black {
+  --bg-main: #0f0f12;
+  --bg-card: rgba(23, 23, 28, 0.88);
+  --bg-soft: rgba(34, 34, 42, 0.9);
+  --text-main: #ffffff;
+  --text-soft: #b6b6c7;
+  --primary: #7c3aed;
+  --secondary: #9333ea;
+  --accent: #c084fc;
+  --border: rgba(255,255,255,0.12);
+  --shadow: rgba(0, 0, 0, 0.45);
+  --tag-bg: rgba(124, 58, 237, 0.22);
+  --tag-text: #ddd6fe;
+}
+
+body.theme-pastel {
+  --bg-main: #f7f4ff;
+  --bg-card: rgba(255, 255, 255, 0.62);
+  --bg-soft: rgba(255, 255, 255, 0.78);
+  --text-main: #44315f;
+  --text-soft: #7b6d96;
+  --primary: #a78bfa;
+  --secondary: #f9a8d4;
+  --accent: #c4b5fd;
+  --border: rgba(255,255,255,0.55);
+  --shadow: rgba(180,160,255,0.18);
+  --tag-bg: #ede9fe;
+  --tag-text: #7c3aed;
+}
+
+body.theme-ocean {
+  --bg-main: #ecfeff;
+  --bg-card: rgba(255,255,255,0.68);
+  --bg-soft: rgba(224,242,254,0.85);
+  --text-main: #164e63;
+  --text-soft: #4b7280;
+  --primary: #0891b2;
+  --secondary: #38bdf8;
+  --accent: #67e8f9;
+  --border: rgba(14,116,144,0.18);
+  --shadow: rgba(14,116,144,0.16);
+  --tag-bg: #cffafe;
+  --tag-text: #0e7490;
+}
+
+body.theme-mint {
+  --bg-main: #ecfdf5;
+  --bg-card: rgba(255,255,255,0.68);
+  --bg-soft: rgba(209,250,229,0.85);
+  --text-main: #064e3b;
+  --text-soft: #4f7568;
+  --primary: #10b981;
+  --secondary: #34d399;
+  --accent: #6ee7b7;
+  --border: rgba(16,185,129,0.18);
+  --shadow: rgba(16,185,129,0.16);
+  --tag-bg: #d1fae5;
+  --tag-text: #047857;
+}
+
+body.theme-sunset {
+  --bg-main: #fff7ed;
+  --bg-card: rgba(255,255,255,0.7);
+  --bg-soft: rgba(255,237,213,0.9);
+  --text-main: #7c2d12;
+  --text-soft: #9a6a4c;
+  --primary: #f97316;
+  --secondary: #fb7185;
+  --accent: #fdba74;
+  --border: rgba(249,115,22,0.18);
+  --shadow: rgba(249,115,22,0.16);
+  --tag-bg: #ffedd5;
+  --tag-text: #c2410c;
+}
+
+body.theme-rose {
+  --bg-main: #fff1f2;
+  --bg-card: rgba(255,255,255,0.7);
+  --bg-soft: rgba(255,228,230,0.9);
+  --text-main: #831843;
+  --text-soft: #9f6279;
+  --primary: #e11d48;
+  --secondary: #fb7185;
+  --accent: #f9a8d4;
+  --border: rgba(225,29,72,0.18);
+  --shadow: rgba(225,29,72,0.14);
+  --tag-bg: #ffe4e6;
+  --tag-text: #be123c;
+}
+
+body.theme-dark {
+  --bg-main: #111827;
+  --bg-card: rgba(31,41,55,0.88);
+  --bg-soft: rgba(55,65,81,0.9);
+  --text-main: #f9fafb;
+  --text-soft: #cbd5e1;
+  --primary: #60a5fa;
+  --secondary: #818cf8;
+  --accent: #93c5fd;
+  --border: rgba(255,255,255,0.12);
+  --shadow: rgba(0,0,0,0.4);
+  --tag-bg: rgba(96,165,250,0.18);
+  --tag-text: #bfdbfe;
+}
+
+body.theme-crimson {
+  --bg-main: #1a0f12;
+  --bg-card: rgba(39,18,24,0.9);
+  --bg-soft: rgba(69,26,36,0.9);
+  --text-main: #fff1f2;
+  --text-soft: #fecdd3;
+  --primary: #dc2626;
+  --secondary: #be123c;
+  --accent: #fb7185;
+  --border: rgba(251,113,133,0.18);
+  --shadow: rgba(127,29,29,0.35);
+  --tag-bg: rgba(220,38,38,0.22);
+  --tag-text: #fecdd3;
+}
+
+body.theme-gold {
+  --bg-main: #fffbeb;
+  --bg-card: rgba(255,255,255,0.72);
+  --bg-soft: rgba(254,243,199,0.9);
+  --text-main: #78350f;
+  --text-soft: #927044;
+  --primary: #d97706;
+  --secondary: #facc15;
+  --accent: #fde68a;
+  --border: rgba(217,119,6,0.18);
+  --shadow: rgba(217,119,6,0.15);
+  --tag-bg: #fef3c7;
+  --tag-text: #92400e;
+}
+
+body.theme-purple {
+  --bg-main: #1e1b4b;
+  --bg-card: rgba(49,46,129,0.82);
+  --bg-soft: rgba(67,56,202,0.45);
+  --text-main: #ffffff;
+  --text-soft: #ddd6fe;
+  --primary: #8b5cf6;
+  --secondary: #ec4899;
+  --accent: #c084fc;
+  --border: rgba(255,255,255,0.16);
+  --shadow: rgba(76,29,149,0.45);
+  --tag-bg: rgba(196,181,253,0.18);
+  --tag-text: #ede9fe;
+}
+
+body.theme-cyan {
+  --bg-main: #f0fdfa;
+  --bg-card: rgba(255,255,255,0.72);
+  --bg-soft: rgba(204,251,241,0.86);
+  --text-main: #134e4a;
+  --text-soft: #5b7976;
+  --primary: #06b6d4;
+  --secondary: #14b8a6;
+  --accent: #99f6e4;
+  --border: rgba(20,184,166,0.18);
+  --shadow: rgba(20,184,166,0.15);
+  --tag-bg: #ccfbf1;
+  --tag-text: #0f766e;
+}
+
+body.theme-mocha {
+  --bg-main: #211814;
+  --bg-card: rgba(54,40,34,0.9);
+  --bg-soft: rgba(75,55,45,0.92);
+  --text-main: #fff7ed;
+  --text-soft: #e7c9b4;
+  --primary: #b45309;
+  --secondary: #d97706;
+  --accent: #f59e0b;
+  --border: rgba(251,191,36,0.16);
+  --shadow: rgba(0,0,0,0.4);
+  --tag-bg: rgba(217,119,6,0.22);
+  --tag-text: #fed7aa;
+}
+
+/* GLOBAL THEME APPLICATION */
+
+body {
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+}
+
+.app-layout,
+.auth-page {
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 30%, transparent) 0%, transparent 28%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--secondary) 28%, transparent) 0%, transparent 30%),
+    radial-gradient(circle at bottom left, color-mix(in srgb, var(--accent) 26%, transparent) 0%, transparent 28%),
+    var(--bg-main) !important;
+  color: var(--text-main) !important;
+}
+
+.navbar,
+.sidebar,
+.hero-card,
+.feed-title-card,
+.add-post-page,
+.create-post-card,
+.post-card,
+.panel-card,
+.profile-card,
+.edit-profile-card,
+.project-form-card,
+.project-card,
+.github-card,
+.snippet-form-card,
+.snippet-card,
+.chat-users,
+.chat-box,
+.connections-card,
+.auth-card,
+.public-profile-card,
+.public-section,
+.join-room-card,
+.editor-layout,
+.job-form-card,
+.job-card,
+.notification-card,
+.ai-review-card,
+.search-user-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 12px 35px var(--shadow) !important;
+  color: var(--text-main) !important;
+  backdrop-filter: blur(22px);
+}
+
+.content {
+  color: var(--text-main) !important;
+}
+
+h1, h2, h3, h4, h5,
+.hero-card h1,
+.feed-title-card h1,
+.add-post-page h1,
+.profile-card h1,
+.profile-card h1,
+.edit-profile-card h2,
+.project-card h3,
+.project-form-card h2,
+.panel-card h3,
+.github-header h2,
+.repo-title,
+.snippet-form-card h2,
+.snippet-header h3,
+.chat-users h2,
+.chat-header h2,
+.connections-card h2,
+.connection-item h3,
+.public-section h2,
+.public-profile-card h1,
+.mutual-box h3,
+.job-form-card h2,
+.job-header h3,
+.applicants-box h4,
+.notifications-header h1,
+.ai-review-card h2,
+.search-page h1,
+.search-section h2 {
+  color: var(--text-main) !important;
+}
+
+p, span, small,
+.hero-card p,
+.feed-title-card p,
+.add-post-page p,
+.post-header p,
+.post-content,
+.panel-card p,
+.profile-bio,
+.profile-info p,
+.project-desc,
+.project-card-header p,
+.github-header p,
+.github-stats p,
+.repo-card p,
+.snippet-header p,
+.chat-header p,
+.empty-chat,
+.online-status-text,
+.connection-item p,
+.public-section p,
+.mutual-box p,
+.mutual-person,
+.job-header p,
+.job-header small,
+.job-desc,
+.applicant-item p,
+.notification-card span,
+.ai-review-card p,
+.empty-search-text,
+.search-user-card p {
+  color: var(--text-soft) !important;
+}
+
+.logo {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.avatar,
+.profile-avatar,
+.comment-avatar,
+.mini-avatar {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  color: white !important;
+}
+
+.sidebar a,
+.chat-user,
+.connection-item,
+.profile-info,
+.mutual-box,
+.applicants-box,
+.repo-card,
+.github-stats div,
+.comment-item,
+.comments-list p,
+.other-message,
+.ai-review-output {
+  background: var(--bg-soft) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border);
+}
+
+.sidebar a {
+  color: var(--text-soft) !important;
+}
+
+.sidebar a:hover,
+.active-chat-user,
+.chat-user:hover {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+  color: white !important;
+}
+
+input,
+textarea,
+select,
+.create-post-top input,
+.tech-input,
+.comment-box input,
+.chat-input input,
+.project-form-card input,
+.project-form-card textarea,
+.snippet-form-card input,
+.snippet-form-card textarea,
+.snippet-form-card select,
+.edit-profile-card input,
+.edit-profile-card textarea,
+.job-form-card input,
+.job-form-card textarea,
+.job-form-card select,
+.top-search input,
+.theme-switcher,
+.join-room-card input,
+.join-room-card textarea,
+.join-room-card select,
+.editor-topbar select,
+.applicant-direct-message input {
+  background: var(--bg-soft) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-soft) !important;
+  opacity: 0.8;
+}
+
+button,
+.create-post-actions button,
+.post-actions button,
+.comment-box button,
+.edit-profile-card button,
+.project-form-card button,
+.snippet-form-card button,
+.chat-input button,
+.connection-item button,
+.auth-card button,
+.join-room-card button,
+.job-form-card button,
+.apply-btn,
+.applied-btn,
+.notifications-header button,
+.ai-review-card button,
+.applicant-direct-message button,
+.sidebar-logout-btn,
+.logout-btn,
+.github-link {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.post-actions button,
+.create-post-actions button,
+.snippet-actions button,
+.project-links a {
+  background: var(--bg-soft) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.tech-tags span,
+.profile-skills span,
+.project-tags span,
+.job-skills span,
+.search-skill-tags span,
+.profile-social-stats span {
+  background: var(--tag-bg) !important;
+  color: var(--tag-text) !important;
+}
+
+.delete-btn,
+.delete-project-btn,
+.delete-snippet-btn,
+.delete-job-btn {
+  background: var(--danger-bg) !important;
+  color: var(--danger-text) !important;
+}
+
+.my-message {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+  color: white !important;
+}
+
+.my-message p,
+.my-message span {
+  color: white !important;
+}
+
+.editor-wrapper,
+.snippet-card pre {
+  background: #111118 !important;
+  color: #f8fafc !important;
+}
+
+.unread-notification {
+  border-left: 6px solid var(--primary) !important;
+  background: color-mix(in srgb, var(--primary) 14%, var(--bg-card)) !important;
+}
+
+.sidebar-badge {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.online-dot {
+  background: #22c55e !important;
+}
+
+.typing-text {
+  color: var(--primary) !important;
+}
+
+.message-time,
+.comment-time {
+  color: var(--text-soft) !important;
+}
+
+/* Theme Switcher polish */
+.theme-switcher {
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+/* Mobile theme fixes */
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 72px;
+    padding: 14px 20px;
+    gap: 12px;
+  }
+
+  .top-search {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .theme-switcher {
+    max-width: 150px;
+  }
+}
+
+
+/* THEME POLISH */
+
+body,
+.app-layout,
+.navbar,
+.sidebar,
+.content,
+.post-card,
+.profile-card,
+.edit-profile-card,
+.project-card,
+.snippet-card,
+.chat-box,
+.chat-users,
+.connections-card,
+.github-card,
+.public-profile-card,
+.public-section,
+.job-card,
+.job-form-card,
+.notifications-page,
+.ai-review-card {
+  transition:
+    background 0.35s ease,
+    color 0.35s ease,
+    border 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.app-layout {
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 28%, transparent) 0%, transparent 28%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--secondary) 26%, transparent) 0%, transparent 30%),
+    var(--bg-main);
+}
+
+.navbar,
+.sidebar,
+.create-post-card,
+.post-card,
+.panel-card,
+.profile-card,
+.edit-profile-card,
+.project-card,
+.project-form-card,
+.snippet-card,
+.snippet-form-card,
+.chat-users,
+.chat-box,
+.connections-card,
+.github-card,
+.public-profile-card,
+.public-section,
+.job-card,
+.job-form-card,
+.notification-card,
+.feed-title-card,
+.add-post-page,
+.ai-review-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 12px 35px var(--shadow) !important;
+}
+
+input,
+textarea,
+select,
+.repo-card,
+.comment-item,
+.connection-item,
+.github-stats div,
+.profile-info,
+.mutual-box,
+.applicants-box,
+.search-user-card {
+  background: var(--bg-soft) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+.logo,
+.post-header h3,
+.profile-card h1,
+.project-card h3,
+.snippet-header h3,
+.chat-header h2,
+.connections-card h2,
+.job-header h3,
+.search-page h1,
+.search-section h2 {
+  color: var(--text-main) !important;
+}
+
+p,
+span,
+small,
+label,
+.post-content,
+.profile-bio,
+.project-desc,
+.job-desc,
+.online-status-text,
+.empty-search-text {
+  color: var(--text-soft) !important;
+}
+
+button,
+.apply-btn,
+.github-link,
+.edit-profile-card button,
+.project-form-card button,
+.snippet-form-card button,
+.job-form-card button,
+.chat-input button,
+.notifications-header button,
+.ai-review-card button,
+.sidebar-logout-btn {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+  color: white !important;
+}
+
+.avatar,
+.profile-avatar,
+.comment-avatar,
+.mini-avatar {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+}
+
+.tech-tags span,
+.project-tags span,
+.profile-skills span,
+.job-skills span,
+.search-skill-tags span {
+  background: color-mix(in srgb, var(--primary) 18%, white) !important;
+  color: var(--primary) !important;
+}
+
+.sidebar a:hover,
+.active-chat-user,
+.chat-user:hover {
+  background: linear-gradient(90deg, var(--primary), var(--secondary)) !important;
+  color: white !important;
+}
+
+.theme-switcher {
+  background: var(--bg-soft) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.main-dashboard-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 35px var(--shadow);
+
+  border-radius: 30px;
+  padding: 30px;
+  margin-bottom: 24px;
+
+  text-align: center;
+}
+
+.main-dashboard-card h1 {
+  font-size: 36px;
+  font-weight: 900;
+  margin-bottom: 10px;
+  color: var(--text-main);
+}
+
+.main-dashboard-card p {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.7;
+  color: var(--text-soft);
 }

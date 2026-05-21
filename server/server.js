@@ -21,6 +21,12 @@ const CodeRoom = require("./models/CodeRoom");
 const Job = require("./models/Job");
 const Notification = require("./models/Notification");
 
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 const app = express();
 const server = http.createServer(app);
 
@@ -1147,6 +1153,66 @@ app.get("/api/notifications/unread-count/:userId", async (req, res) => {
   }
 });
 
+app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select("-password");
+
+    const projects = await Project.find({
+      user: req.params.userId,
+    });
+
+    const snippets = await Snippet.find({
+      user: req.params.userId,
+    });
+
+    const prompt = `
+Review this developer portfolio.
+
+Name: ${user.name}
+Role: ${user.role}
+Bio: ${user.bio}
+Skills: ${user.skills?.join(", ")}
+GitHub Username: ${user.githubUsername}
+Location: ${user.location}
+
+Projects:
+${projects
+  .map(
+    (project) =>
+      `- ${project.title}: ${project.description}. Tech: ${project.tech?.join(", ")}`
+  )
+  .join("\n")}
+
+Code Snippets:
+${snippets
+  .map((snippet) => `- ${snippet.title} (${snippet.language})`)
+  .join("\n")}
+
+Give response in this format:
+1. Overall Rating out of 10
+2. Strengths
+3. Weak Areas
+4. Profile Improvement Tips
+5. Project Improvement Tips
+6. Recruiter Impression
+`;
+
+    const response = await openai.responses.create({
+      model: "gpt-5.5-instant",
+      input: prompt,
+    });
+
+    res.json({
+      review: response.output_text,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "AI portfolio review failed",
+    });
+  }
+});
 
 /* SOCKET.IO */
 

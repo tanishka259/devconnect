@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ThemeSwitcher from "../ThemeSwitcher";
 
 function Navbar() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -28,6 +29,7 @@ function Navbar() {
           onChange={(e) => setQuery(e.target.value)}
         />
       </form>
+          <ThemeSwitcher />
 
       <div className="navbar-user">
         <div className="avatar small-avatar">
@@ -37,7 +39,6 @@ function Navbar() {
             user?.name?.charAt(0)
           )}
         </div>
-
         <span>{user?.name}</span>
       </div>
     </nav>

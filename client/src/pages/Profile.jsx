@@ -17,13 +17,18 @@ function Profile() {
   const [location, setLocation] = useState("");
   const [role, setRole] = useState("");
 
+  const [aiReview, setAiReview] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
   const fetchProfile = async () => {
     try {
       const response = await axios.get(
         `https://devconnect-api-hwvw.onrender.com/api/users/${storedUser._id}`,
       );
 
-      const postsResponse = await axios.get("https://devconnect-api-hwvw.onrender.com/api/posts");
+      const postsResponse = await axios.get(
+        "https://devconnect-api-hwvw.onrender.com/api/posts",
+      );
 
       setProfile(response.data);
 
@@ -38,6 +43,22 @@ function Profile() {
       setRole(response.data.role || "Developer");
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleAIReview = async () => {
+    try {
+      setAiLoading(true);
+
+      const response = await axios.post(
+        `YOUR_BACKEND_URL/api/ai/portfolio-review/${storedUser._id}`,
+      );
+
+      setAiReview(response.data.review);
+    } catch (error) {
+      alert("AI review failed");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -195,6 +216,21 @@ function Profile() {
         </div>
 
         <GitHubStats username={profile.githubUsername} />
+
+        <div className="ai-review-card">
+          <h2>AI Portfolio Review</h2>
+
+          <p>
+            Get AI feedback on your profile, skills, projects, and recruiter
+            impression.
+          </p>
+
+          <button onClick={handleAIReview} disabled={aiLoading}>
+            {aiLoading ? "Reviewing..." : "Review My Portfolio"}
+          </button>
+
+          {aiReview && <pre className="ai-review-output">{aiReview}</pre>}
+        </div>
 
         <div className="public-section">
           <h2>My Feed</h2>

@@ -9,7 +9,9 @@ function Dashboard() {
   const [posts, setPosts] = useState([]);
 
   const fetchPosts = async () => {
-    const response = await axios.get("https://devconnect-api-hwvw.onrender.com/api/posts");
+    const response = await axios.get(
+      "https://devconnect-api-hwvw.onrender.com/api/posts",
+    );
     setPosts(response.data);
   };
 
@@ -21,9 +23,18 @@ function Dashboard() {
     <MainLayout>
       <div className="feed-layout">
         <div className="feed-main">
+          <div className="main-dashboard-card">
+            <h1>DevConnect</h1>
+            <p>
+              A developer-focused social platform for networking, coding, and
+              collaboration.
+            </p>
+          </div>
           <div className="feed-title-card">
             <h1>Developer Feed</h1>
-            <p>Explore posts, ideas, snippets, and projects shared by developers.</p>
+            <p>
+              Explore posts, ideas, snippets, and projects shared by developers.
+            </p>
           </div>
 
           {posts.length === 0 && (
@@ -31,11 +42,7 @@ function Dashboard() {
           )}
 
           {posts.map((post) => (
-            <PostCard
-              key={post._id}
-              post={post}
-              onLikeUpdated={fetchPosts}
-            />
+            <PostCard key={post._id} post={post} onLikeUpdated={fetchPosts} />
           ))}
         </div>
 
