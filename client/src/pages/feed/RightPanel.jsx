@@ -10,11 +10,11 @@ function RightPanel() {
   const fetchSuggestedUsers = async () => {
     try {
       const usersResponse = await axios.get(
-        "https://https://devconnect-api.onrender.com/api/users"
+        "https://https://devconnect-api-hwvw.onrender.com/api/users"
       );
 
       const connectionsResponse = await axios.get(
-        `https://https://devconnect-api.onrender.com/api/connections/${currentUser._id}`
+        `https://https://devconnect-api-hwvw.onrender.com/api/connections/${currentUser._id}`
       );
 
       const connectedIds = connectionsResponse.data.map((user) => user._id);

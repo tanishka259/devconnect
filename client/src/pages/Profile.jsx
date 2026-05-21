@@ -53,7 +53,7 @@ function Profile() {
       const storedUser = JSON.parse(localStorage.getItem("user"));
 
       const response = await axios.post(
-        `https://devconnect-api.onrender.com/api/ai/portfolio-review/${storedUser._id}`,
+        `https://devconnect-api-hwvw.onrender.com/api/ai/portfolio-review/${storedUser._id}`,
       );
 
       setAiReview(response.data.review);
