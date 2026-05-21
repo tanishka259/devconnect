@@ -50,12 +50,15 @@ function Profile() {
     try {
       setAiLoading(true);
 
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+
       const response = await axios.post(
-        `https://devconnect-api.onrender.com/api/ai/portfolio-review/${user._id}`
+        `https://devconnect-api.onrender.com/api/ai/portfolio-review/${storedUser._id}`,
       );
 
       setAiReview(response.data.review);
     } catch (error) {
+      console.log(error);
       alert(error.response?.data?.message || "AI review failed");
     } finally {
       setAiLoading(false);
