@@ -56,7 +56,7 @@ function Profile() {
 
       setAiReview(response.data.review);
     } catch (error) {
-      alert("AI review failed");
+      alert(error.response?.data?.message || "AI review failed");
     } finally {
       setAiLoading(false);
     }
