@@ -63,6 +63,10 @@ app.get("/", (req, res) => {
   res.send("Backend Running");
 });
 
+app.get("/api/test-ai", (req, res) => {
+  res.json({ message: "Free AI route working" });
+});
+
 /* AUTH */
 
 app.post("/api/register", async (req, res) => {
