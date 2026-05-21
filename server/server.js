@@ -21,12 +21,6 @@ const CodeRoom = require("./models/CodeRoom");
 const Job = require("./models/Job");
 const Notification = require("./models/Notification");
 
-// const OpenAI = require("openai");
-
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
-
 const app = express();
 const server = http.createServer(app);
 
@@ -37,11 +31,7 @@ const io = new Server(server, {
   },
 });
 
-app.use(
-  cors({
-    origin: "*",
-  }),
-);
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 cloudinary.config({
@@ -95,7 +85,6 @@ app.post("/api/register", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error saving user",
     });
@@ -123,13 +112,9 @@ app.post("/api/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      {
-        id: user._id,
-      },
+      { id: user._id },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      },
+      { expiresIn: "7d" }
     );
 
     res.json({
@@ -139,7 +124,6 @@ app.post("/api/login", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Server error",
     });
@@ -151,11 +135,9 @@ app.post("/api/login", async (req, res) => {
 app.get("/api/users", async (req, res) => {
   try {
     const users = await User.find().select("-password");
-
     res.json(users);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching users",
     });
@@ -175,7 +157,6 @@ app.get("/api/users/:id", async (req, res) => {
     res.json(user);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching profile",
     });
@@ -195,9 +176,7 @@ app.put("/api/users/:id", async (req, res) => {
         location,
         role,
       },
-      {
-        new: true,
-      },
+      { new: true }
     ).select("-password");
 
     res.json({
@@ -206,7 +185,6 @@ app.put("/api/users/:id", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error updating profile",
     });
@@ -221,12 +199,8 @@ app.post("/api/users/:id/avatar", upload.single("avatar"), async (req, res) => {
 
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
-      {
-        avatar: result.secure_url,
-      },
-      {
-        new: true,
-      },
+      { avatar: result.secure_url },
+      { new: true }
     ).select("-password");
 
     fs.unlinkSync(req.file.path);
@@ -237,7 +211,6 @@ app.post("/api/users/:id/avatar", upload.single("avatar"), async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error uploading avatar",
     });
@@ -263,10 +236,7 @@ app.post("/api/posts", upload.single("image"), async (req, res) => {
 
     const techArray =
       typeof tech === "string"
-        ? tech
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean)
+        ? tech.split(",").map((item) => item.trim()).filter(Boolean)
         : [];
 
     const post = await Post.create({
@@ -286,7 +256,6 @@ app.post("/api/posts", upload.single("image"), async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error creating post",
     });
@@ -303,7 +272,6 @@ app.get("/api/posts", async (req, res) => {
     res.json(posts);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching posts",
     });
@@ -322,10 +290,14 @@ app.put("/api/posts/:id/like", async (req, res) => {
       });
     }
 
-    const alreadyLiked = post.likes.some((id) => id.toString() === userId);
+    const alreadyLiked = post.likes.some(
+      (id) => id.toString() === userId
+    );
 
     if (alreadyLiked) {
-      post.likes = post.likes.filter((id) => id.toString() !== userId);
+      post.likes = post.likes.filter(
+        (id) => id.toString() !== userId
+      );
     } else {
       post.likes.push(userId);
     }
@@ -352,7 +324,6 @@ app.put("/api/posts/:id/like", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error liking post",
     });
@@ -384,7 +355,6 @@ app.delete("/api/posts/:id", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error deleting post",
     });
@@ -430,7 +400,6 @@ app.post("/api/posts/:id/comment", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error adding comment",
     });
@@ -454,7 +423,7 @@ app.post("/api/projects", async (req, res) => {
 
     const populatedProject = await Project.findById(project._id).populate(
       "user",
-      "name email avatar role",
+      "name email avatar role"
     );
 
     res.json({
@@ -463,7 +432,6 @@ app.post("/api/projects", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error creating project",
     });
@@ -479,7 +447,6 @@ app.get("/api/projects", async (req, res) => {
     res.json(projects);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching projects",
     });
@@ -511,7 +478,6 @@ app.delete("/api/projects/:id", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error deleting project",
     });
@@ -533,7 +499,7 @@ app.post("/api/snippets", async (req, res) => {
 
     const populatedSnippet = await Snippet.findById(snippet._id).populate(
       "user",
-      "name email avatar role",
+      "name email avatar role"
     );
 
     res.json({
@@ -542,7 +508,6 @@ app.post("/api/snippets", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error creating snippet",
     });
@@ -558,7 +523,6 @@ app.get("/api/snippets", async (req, res) => {
     res.json(snippets);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching snippets",
     });
@@ -590,7 +554,6 @@ app.delete("/api/snippets/:id", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error deleting snippet",
     });
@@ -604,11 +567,11 @@ app.get("/api/github/:username", async (req, res) => {
     const { username } = req.params;
 
     const profileResponse = await axios.get(
-      `https://api.github.com/users/${username}`,
+      `https://api.github.com/users/${username}`
     );
 
     const reposResponse = await axios.get(
-      `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`,
+      `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`
     );
 
     res.json({
@@ -617,7 +580,6 @@ app.get("/api/github/:username", async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
-
     res.status(500).json({
       message: "Error fetching GitHub data",
     });
@@ -656,7 +618,6 @@ app.post("/api/connections/request", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error sending request",
     });
@@ -667,13 +628,12 @@ app.get("/api/connections/requests/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).populate(
       "connectionRequests",
-      "name email avatar role",
+      "name email avatar role"
     );
 
     res.json(user.connectionRequests);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching requests",
     });
@@ -696,7 +656,7 @@ app.post("/api/connections/accept", async (req, res) => {
     }
 
     user.connectionRequests = user.connectionRequests.filter(
-      (id) => id.toString() !== senderId,
+      (id) => id.toString() !== senderId
     );
 
     await user.save();
@@ -707,7 +667,6 @@ app.post("/api/connections/accept", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error accepting request",
     });
@@ -718,19 +677,18 @@ app.get("/api/connections/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).populate(
       "connections",
-      "name email avatar role",
+      "name email avatar role"
     );
 
     const uniqueConnections = user.connections.filter(
       (person, index, self) =>
         index ===
-        self.findIndex((p) => p._id.toString() === person._id.toString()),
+        self.findIndex((p) => p._id.toString() === person._id.toString())
     );
 
     res.json(uniqueConnections);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching connections",
     });
@@ -745,19 +703,19 @@ app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
 
     const profileUser = await User.findById(profileId).populate(
       "connections",
-      "name email avatar role",
+      "name email avatar role"
     );
 
     const mutuals = profileUser.connections.filter((connection) =>
       currentUser.connections.some(
-        (id) => id.toString() === connection._id.toString(),
-      ),
+        (id) => id.toString() === connection._id.toString()
+      )
     );
 
     const uniqueMutuals = mutuals.filter(
       (person, index, self) =>
         index ===
-        self.findIndex((p) => p._id.toString() === person._id.toString()),
+        self.findIndex((p) => p._id.toString() === person._id.toString())
     );
 
     res.json({
@@ -766,7 +724,6 @@ app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching mutual connections",
     });
@@ -775,7 +732,6 @@ app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
 
 /* MESSAGES */
 
-/* UNREAD MESSAGE COUNT - KEEP THIS FIRST */
 app.get("/api/messages/unread-count/:userId", async (req, res) => {
   try {
     const count = await Message.countDocuments({
@@ -786,14 +742,12 @@ app.get("/api/messages/unread-count/:userId", async (req, res) => {
     res.json({ count });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching unread message count",
     });
   }
 });
 
-/* MARK CONVERSATION AS READ - KEEP THIS SECOND */
 app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
   try {
     await Message.updateMany(
@@ -801,9 +755,7 @@ app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
         receiver: req.params.userId,
         sender: req.params.senderId,
       },
-      {
-        isRead: true,
-      },
+      { isRead: true }
     );
 
     res.json({
@@ -811,14 +763,12 @@ app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error marking messages as read",
     });
   }
 });
-/* MESSAGES */
-/* GET MESSAGES BETWEEN TWO USERS - KEEP THIS LAST */
+
 app.get("/api/messages/:user1/:user2", async (req, res) => {
   try {
     const { user1, user2 } = req.params;
@@ -836,9 +786,40 @@ app.get("/api/messages/:user1/:user2", async (req, res) => {
     res.json(messages);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching messages",
+    });
+  }
+});
+
+app.post("/api/direct-message", async (req, res) => {
+  try {
+    const { senderId, receiverId, text } = req.body;
+
+    if (!senderId || !receiverId || !text) {
+      return res.status(400).json({
+        message: "Missing message details",
+      });
+    }
+
+    const message = await Message.create({
+      sender: senderId,
+      receiver: receiverId,
+      text,
+    });
+
+    const populatedMessage = await Message.findById(message._id)
+      .populate("sender", "name email avatar role")
+      .populate("receiver", "name email avatar role");
+
+    res.json({
+      message: "Message sent",
+      data: populatedMessage,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error sending message",
     });
   }
 });
@@ -866,7 +847,6 @@ app.post("/api/code-rooms", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error creating code room",
     });
@@ -888,7 +868,6 @@ app.get("/api/code-rooms/:roomId", async (req, res) => {
     res.json(room);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching room",
     });
@@ -929,7 +908,6 @@ app.post("/api/jobs", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error creating job",
     });
@@ -946,7 +924,6 @@ app.get("/api/jobs", async (req, res) => {
     res.json(jobs);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error fetching jobs",
     });
@@ -966,22 +943,20 @@ app.put("/api/jobs/:id/apply", async (req, res) => {
     }
 
     const alreadyApplied = job.applicants.some(
-      (id) => id.toString() === userId,
+      (id) => id.toString() === userId
     );
 
     if (!alreadyApplied) {
       job.applicants.push(userId);
       await job.save();
 
-      if (!alreadyApplied) {
-        await Notification.create({
-          receiver: job.recruiter,
-          sender: userId,
-          type: "job",
-          text: "applied to your job post",
-          link: "/recruiter",
-        });
-      }
+      await Notification.create({
+        receiver: job.recruiter,
+        sender: userId,
+        type: "job",
+        text: "applied to your job post",
+        link: "/recruiter",
+      });
     }
 
     const updatedJob = await Job.findById(req.params.id)
@@ -994,7 +969,6 @@ app.put("/api/jobs/:id/apply", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error applying to job",
     });
@@ -1026,36 +1000,26 @@ app.delete("/api/jobs/:id", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Error deleting job",
     });
   }
 });
 
-app.post("/api/direct-message", async (req, res) => {
+/* NOTIFICATIONS */
+
+app.get("/api/notifications/unread-count/:userId", async (req, res) => {
   try {
-    const { senderId, receiverId, text } = req.body;
-
-    const message = await Message.create({
-      sender: senderId,
-      receiver: receiverId,
-      text,
+    const count = await Notification.countDocuments({
+      receiver: req.params.userId,
+      isRead: false,
     });
 
-    const populatedMessage = await Message.findById(message._id)
-      .populate("sender", "name email avatar role")
-      .populate("receiver", "name email avatar role");
-
-    res.json({
-      message: "Message sent",
-      data: populatedMessage,
-    });
+    res.json({ count });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
-      message: "Error sending message",
+      message: "Error fetching unread notification count",
     });
   }
 });
@@ -1070,6 +1034,7 @@ app.get("/api/notifications/:userId", async (req, res) => {
 
     res.json(notifications);
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       message: "Error fetching notifications",
     });
@@ -1080,92 +1045,31 @@ app.put("/api/notifications/read/:userId", async (req, res) => {
   try {
     await Notification.updateMany(
       { receiver: req.params.userId },
-      { isRead: true },
+      { isRead: true }
     );
 
     res.json({
       message: "Notifications marked as read",
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       message: "Error updating notifications",
     });
   }
 });
 
-/* UNREAD MESSAGE COUNT */
-
-app.get("/api/messages/unread-count/:userId", async (req, res) => {
-  try {
-    const count = await Message.countDocuments({
-      receiver: req.params.userId,
-      isRead: false,
-    });
-
-    res.json({ count });
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      message: "Error fetching unread message count",
-    });
-  }
-});
-
-/* MARK CONVERSATION AS READ */
-
-app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
-  try {
-    await Message.updateMany(
-      {
-        receiver: req.params.userId,
-        sender: req.params.senderId,
-      },
-      {
-        isRead: true,
-      },
-    );
-
-    res.json({
-      message: "Messages marked as read",
-    });
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      message: "Error marking messages as read",
-    });
-  }
-});
-
-/* UNREAD NOTIFICATION COUNT */
-
-app.get("/api/notifications/unread-count/:userId", async (req, res) => {
-  try {
-    const count = await Notification.countDocuments({
-      receiver: req.params.userId,
-      isRead: false,
-    });
-
-    res.json({ count });
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      message: "Error fetching unread notification count",
-    });
-  }
-});
-
-// ai-porfolio review
-
-app.get("/api/test-ai", (req, res) => {
-  res.json({ message: "Free AI route working" });
-});
+/* FREE AI PORTFOLIO REVIEW */
 
 app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
     const projects = await Project.find({
       user: req.params.userId,
@@ -1174,12 +1078,6 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
     const snippets = await Snippet.find({
       user: req.params.userId,
     });
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
 
     let score = 5;
 
@@ -1194,29 +1092,43 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
     const strengths = [];
 
     if (user.skills?.length > 0) {
-      strengths.push(`You have listed relevant skills like ${user.skills.slice(0, 4).join(", ")}.`);
+      strengths.push(
+        `You have listed relevant skills like ${user.skills
+          .slice(0, 4)
+          .join(", ")}.`
+      );
     }
 
     if (projects.length > 0) {
-      strengths.push(`You have ${projects.length} project(s), which helps recruiters understand your practical work.`);
+      strengths.push(
+        `You have ${projects.length} project(s), which helps recruiters understand your practical work.`
+      );
     }
 
     if (snippets.length > 0) {
-      strengths.push(`You have added ${snippets.length} code snippet(s), showing your coding practice.`);
+      strengths.push(
+        `You have added ${snippets.length} code snippet(s), showing your coding practice.`
+      );
     }
 
     if (user.githubUsername) {
-      strengths.push("Your GitHub profile is connected, which improves your technical credibility.");
+      strengths.push(
+        "Your GitHub profile is connected, which improves your technical credibility."
+      );
     }
 
     if (strengths.length === 0) {
-      strengths.push("Your profile has a good starting structure, but it needs more details.");
+      strengths.push(
+        "Your profile has a good starting structure, but it needs more details."
+      );
     }
 
     const weakAreas = [];
 
     if (!user.bio || user.bio.length < 40) {
-      weakAreas.push("Your bio is short. Add a clearer introduction about your role, goals, and tech interests.");
+      weakAreas.push(
+        "Your bio is short. Add a clearer introduction about your role, goals, and tech interests."
+      );
     }
 
     if (!user.skills || user.skills.length < 3) {
@@ -1224,11 +1136,15 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
     }
 
     if (!user.githubUsername) {
-      weakAreas.push("Connect your GitHub username to show repositories and coding activity.");
+      weakAreas.push(
+        "Connect your GitHub username to show repositories and coding activity."
+      );
     }
 
     if (projects.length < 2) {
-      weakAreas.push("Add more projects with description, tech stack, GitHub link, and live demo.");
+      weakAreas.push(
+        "Add more projects with description, tech stack, GitHub link, and live demo."
+      );
     }
 
     if (snippets.length < 2) {
@@ -1236,7 +1152,9 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
     }
 
     if (weakAreas.length === 0) {
-      weakAreas.push("Your profile is strong. Focus on polishing project descriptions and adding live demos.");
+      weakAreas.push(
+        "Your profile is strong. Focus on polishing project descriptions and adding live demos."
+      );
     }
 
     const projectTips =
@@ -1275,12 +1193,9 @@ Final Suggestion:
 Focus on 2–3 strong projects with clean UI, proper README, screenshots, live demo, and GitHub links. This will make your portfolio much stronger.
 `;
 
-    res.json({
-      review,
-    });
+    res.json({ review });
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Free portfolio review failed",
     });
@@ -1296,37 +1211,40 @@ io.on("connection", (socket) => {
 
   socket.on("user-online", (userId) => {
     onlineUsers.set(userId, socket.id);
-
     io.emit("online-users", Array.from(onlineUsers.keys()));
   });
 
   socket.on("send-message", async (data) => {
-    const message = await Message.create({
-      sender: data.sender,
-      receiver: data.receiver,
-      text: data.text,
-    });
-
-    socket.on("typing", ({ senderId, receiverId, senderName }) => {
-      io.emit("user-typing", {
-        senderId,
-        receiverId,
-        senderName,
+    try {
+      const message = await Message.create({
+        sender: data.sender,
+        receiver: data.receiver,
+        text: data.text,
       });
+
+      const populatedMessage = await Message.findById(message._id)
+        .populate("sender", "name email avatar role")
+        .populate("receiver", "name email avatar role");
+
+      io.emit("receive-message", populatedMessage);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  socket.on("typing", ({ senderId, receiverId, senderName }) => {
+    io.emit("user-typing", {
+      senderId,
+      receiverId,
+      senderName,
     });
+  });
 
-    socket.on("stop-typing", ({ senderId, receiverId }) => {
-      io.emit("user-stop-typing", {
-        senderId,
-        receiverId,
-      });
+  socket.on("stop-typing", ({ senderId, receiverId }) => {
+    io.emit("user-stop-typing", {
+      senderId,
+      receiverId,
     });
-
-    const populatedMessage = await Message.findById(message._id)
-      .populate("sender", "name email avatar role")
-      .populate("receiver", "name email avatar role");
-
-    io.emit("receive-message", populatedMessage);
   });
 
   socket.on("join-room", (roomId) => {
