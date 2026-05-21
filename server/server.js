@@ -1153,6 +1153,12 @@ app.get("/api/notifications/unread-count/:userId", async (req, res) => {
   }
 });
 
+// ai-porfolio review
+
+app.get("/api/test-ai", (req, res) => {
+  res.json({ message: "Free AI route working" });
+});
+
 app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select("-password");
