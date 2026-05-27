@@ -3539,3 +3539,8 @@ select:focus {
   margin-top: 3px;
   text-align: right;
 }
+.message-tick {
+  margin-left: 6px;
+  font-weight: 900;
+  color: white;
+}

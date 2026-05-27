@@ -25,7 +25,7 @@ function Messages() {
       const response = await axios.get(`${API_URL}/api/users`);
 
       const filteredUsers = response.data.filter(
-        (user) => user._id !== currentUser._id
+        (user) => user._id !== currentUser._id,
       );
 
       setUsers(filteredUsers);
@@ -37,13 +37,13 @@ function Messages() {
   const fetchMessages = async (userId) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/messages/${currentUser._id}/${userId}`
+        `${API_URL}/api/messages/${currentUser._id}/${userId}`,
       );
 
       setMessages(response.data);
 
       await axios.put(
-        `${API_URL}/api/messages/read/${currentUser._id}/${userId}`
+        `${API_URL}/api/messages/read/${currentUser._id}/${userId}`,
       );
     } catch (error) {
       console.log("Fetch messages error:", error);
@@ -182,9 +182,7 @@ function Messages() {
                   user.name?.charAt(0)
                 )}
 
-                {isUserOnline(user._id) && (
-                  <span className="online-dot"></span>
-                )}
+                {isUserOnline(user._id) && <span className="online-dot"></span>}
               </div>
 
               <div>
@@ -244,6 +242,12 @@ function Messages() {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
+
+                      {message.sender._id === currentUser._id && (
+                        <span className="message-tick">
+                          {message.isRead ? "✓✓" : "✓"}
+                        </span>
+                      )}
                     </span>
                   </div>
                 ))}
