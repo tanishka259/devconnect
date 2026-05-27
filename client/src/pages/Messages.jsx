@@ -228,7 +228,14 @@ function Messages() {
 
                 {typingUser && (
                   <div className="typing-indicator">
-                    {typingUser} is typing...
+                   <span>
+                    {typingUser} is typing
+                    </span> 
+                    <div className="typing-dots">
+                      <b></b>
+                      <b></b>
+                      <b></b>
+                    </div>
                   </div>
                 )}
 

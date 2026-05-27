@@ -3453,3 +3453,81 @@ select:focus {
   color: var(--primary);
   font-weight: 800;
 }
+
+/* PHASE 13D — PREMIUM TYPING INDICATOR */
+
+.typing-indicator {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  width: fit-content;
+  max-width: 70%;
+
+  padding: 11px 14px;
+  border-radius: 18px 18px 18px 6px;
+
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 800;
+
+  box-shadow: 0 8px 20px var(--shadow);
+
+  animation: typingFadeIn 0.22s ease;
+}
+
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-dots b {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+  background: var(--primary);
+
+  display: block;
+
+  animation: typingBounce 1s infinite ease-in-out;
+}
+
+.typing-dots b:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dots b:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typingBounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+@keyframes typingFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
