@@ -1202,6 +1202,78 @@ Focus on 2–3 strong projects with clean UI, proper README, screenshots, live d
   }
 });
 
+/* SAVED POSTS */
+
+app.put("/api/posts/:postId/save", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const { postId } = req.params;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const alreadySaved = user.savedPosts.some(
+      (id) => id.toString() === postId
+    );
+
+    if (alreadySaved) {
+      user.savedPosts = user.savedPosts.filter(
+        (id) => id.toString() !== postId
+      );
+    } else {
+      user.savedPosts.push(postId);
+    }
+
+    await user.save();
+
+    res.json({
+      message: alreadySaved ? "Post unsaved" : "Post saved",
+      savedPosts: user.savedPosts,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error saving post",
+    });
+  }
+});
+
+app.get("/api/users/:userId/saved-posts", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).populate({
+      path: "savedPosts",
+      populate: [
+        {
+          path: "user",
+          select: "name email avatar role",
+        },
+        {
+          path: "comments.user",
+          select: "name email avatar role",
+        },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.json(user.savedPosts.reverse());
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error fetching saved posts",
+    });
+  }
+});
+
 /* SOCKET.IO */
 
 const onlineUsers = new Map();

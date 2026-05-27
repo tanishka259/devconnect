@@ -8,6 +8,8 @@ function PostCard({ post, onLikeUpdated }) {
 
   const isLiked = post.likes?.some((id) => id.toString() === user?._id);
 
+  const isSaved = user?.savedPosts?.some((id) => id.toString() === post._id);
+
   const formattedTime = new Date(post.createdAt).toLocaleDateString([], {
     day: "numeric",
     month: "short",
@@ -16,17 +18,23 @@ function PostCard({ post, onLikeUpdated }) {
   });
 
   const handleLike = async () => {
-    await axios.put(`https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}/like`, {
-      userId: user._id,
-    });
+    await axios.put(
+      `https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}/like`,
+      {
+        userId: user._id,
+      },
+    );
 
     onLikeUpdated();
   };
 
   const handleDelete = async () => {
-    await axios.delete(`https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}`, {
-      data: { userId: user._id },
-    });
+    await axios.delete(
+      `https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}`,
+      {
+        data: { userId: user._id },
+      },
+    );
 
     onLikeUpdated();
   };
@@ -34,12 +42,33 @@ function PostCard({ post, onLikeUpdated }) {
   const handleComment = async () => {
     if (!commentText.trim()) return;
 
-    await axios.post(`https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}/comment`, {
-      userId: user._id,
-      text: commentText,
-    });
+    await axios.post(
+      `https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}/comment`,
+      {
+        userId: user._id,
+        text: commentText,
+      },
+    );
 
     setCommentText("");
+    onLikeUpdated();
+  };
+
+  const handleSavePost = async () => {
+    const response = await axios.put(
+      `https://devconnect-api-hwvw.onrender.com/api/posts/${post._id}/save`,
+      {
+        userId: user._id,
+      },
+    );
+
+    const updatedUser = {
+      ...user,
+      savedPosts: response.data.savedPosts,
+    };
+
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+
     onLikeUpdated();
   };
 
@@ -70,9 +99,7 @@ function PostCard({ post, onLikeUpdated }) {
 
       <p className="post-content">{post.content}</p>
 
-      {post.image && (
-        <img className="post-image" src={post.image} alt="post" />
-      )}
+      {post.image && <img className="post-image" src={post.image} alt="post" />}
 
       <div className="tech-tags">
         {post.tech?.map((item, index) => (
@@ -87,6 +114,9 @@ function PostCard({ post, onLikeUpdated }) {
 
         <button>💬 Comment</button>
         <button>↗ Share</button>
+        <button onClick={handleSavePost}>
+          {isSaved ? "🔖 Saved" : "🔖 Save"}
+        </button>
       </div>
 
       <div className="comment-box">
@@ -103,7 +133,10 @@ function PostCard({ post, onLikeUpdated }) {
       <div className="comments-list">
         {post.comments?.map((comment) => (
           <div className="comment-item" key={comment._id}>
-            <Link to={`/profile/${comment.user?._id}`} className="comment-avatar-link">
+            <Link
+              to={`/profile/${comment.user?._id}`}
+              className="comment-avatar-link"
+            >
               <div className="comment-avatar">
                 {comment.user?.avatar ? (
                   <img src={comment.user.avatar} alt="avatar" />

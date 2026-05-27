@@ -3074,3 +3074,313 @@ button,
   font-size: 11px;
   font-weight: 800;
 }
+
+/* PHASE 12D — PREMIUM UI POLISH */
+
+:root {
+  scroll-behavior: smooth;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  border-radius: 999px;
+}
+
+/* Premium card lift */
+.post-card,
+.profile-card,
+.edit-profile-card,
+.project-card,
+.snippet-card,
+.chat-box,
+.chat-users,
+.connections-card,
+.github-card,
+.public-profile-card,
+.public-section,
+.job-card,
+.job-form-card,
+.notification-card,
+.ai-review-card,
+.feed-title-card,
+.add-post-page,
+.panel-card,
+.create-post-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.post-card::before,
+.profile-card::before,
+.project-card::before,
+.snippet-card::before,
+.job-card::before,
+.notification-card::before,
+.ai-review-card::before,
+.feed-title-card::before,
+.add-post-page::before,
+.panel-card::before,
+.create-post-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    color-mix(in srgb, var(--primary) 12%, transparent),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.post-card:hover::before,
+.profile-card:hover::before,
+.project-card:hover::before,
+.snippet-card:hover::before,
+.job-card:hover::before,
+.notification-card:hover::before,
+.ai-review-card:hover::before,
+.feed-title-card:hover::before,
+.add-post-page:hover::before,
+.panel-card:hover::before,
+.create-post-card:hover::before {
+  opacity: 1;
+}
+
+.post-card:hover,
+.project-card:hover,
+.snippet-card:hover,
+.job-card:hover,
+.notification-card:hover,
+.search-user-card:hover,
+.suggested-dev-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 45px var(--shadow) !important;
+}
+
+.post-card,
+.project-card,
+.snippet-card,
+.job-card,
+.notification-card,
+.search-user-card,
+.suggested-dev-card {
+  transition: all 0.32s ease;
+}
+
+/* Buttons premium */
+button,
+.apply-btn,
+.github-link,
+.project-links a,
+.snippet-actions button,
+.post-actions button,
+.create-post-actions button,
+.sidebar-logout-btn {
+  transition: all 0.28s ease;
+}
+
+button:hover,
+.apply-btn:hover,
+.github-link:hover,
+.project-links a:hover,
+.snippet-actions button:hover,
+.post-actions button:hover,
+.create-post-actions button:hover,
+.sidebar-logout-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+button:active,
+.apply-btn:active,
+.github-link:active,
+.project-links a:active,
+.snippet-actions button:active,
+.post-actions button:active,
+.create-post-actions button:active,
+.sidebar-logout-btn:active {
+  transform: scale(0.97);
+}
+
+/* Inputs premium */
+input,
+textarea,
+select {
+  transition: all 0.25s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+/* Avatar polish */
+.avatar,
+.profile-avatar,
+.comment-avatar,
+.mini-avatar {
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 26%, transparent);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.avatar:hover,
+.profile-avatar:hover,
+.comment-avatar:hover,
+.mini-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* Navbar polish */
+.navbar {
+  backdrop-filter: blur(22px);
+}
+
+.logo {
+  letter-spacing: -0.8px;
+}
+
+.navbar-user {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-soft) 70%, transparent);
+}
+
+/* Sidebar polish */
+.sidebar a {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar a::after {
+  content: "";
+  position: absolute;
+  left: -60%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.25),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.45s ease;
+}
+
+.sidebar a:hover::after {
+  left: 120%;
+}
+
+/* Message polish */
+.my-message,
+.other-message {
+  animation: messagePop 0.22s ease;
+}
+
+@keyframes messagePop {
+  from {
+    transform: translateY(6px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Dashboard hero polish */
+.main-dashboard-card,
+.feed-title-card {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary) 10%, transparent),
+      color-mix(in srgb, var(--secondary) 10%, transparent)
+    ),
+    var(--bg-card) !important;
+}
+
+.main-dashboard-card h1,
+.feed-title-card h1 {
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Badges */
+.sidebar-badge {
+  animation: badgePulse 1.4s infinite ease-in-out;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+/* Mobile polish */
+@media (max-width: 768px) {
+  .content {
+    padding: 18px;
+  }
+
+  .navbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .top-search {
+    order: 3;
+    width: 100%;
+    margin: 0;
+  }
+
+  .theme-switcher {
+    max-width: 140px;
+  }
+
+  .sidebar {
+    gap: 10px;
+  }
+
+  .sidebar a span,
+  .sidebar-logout-btn span {
+    white-space: nowrap;
+  }
+
+  .main-dashboard-card h1 {
+    font-size: 28px;
+  }
+}
+
+.saved-posts-page {
+  width: 100%;
+  max-width: 850px;
+}

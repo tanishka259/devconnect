@@ -55,6 +55,13 @@ const userSchema = new mongoose.Schema(
   },
 ],
 
+savedPosts: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Post",
+  },
+],
+
 connectionRequests: [
   {
     type: mongoose.Schema.Types.ObjectId,

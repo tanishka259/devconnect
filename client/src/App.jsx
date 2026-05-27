@@ -15,6 +15,7 @@ import Recruiter from "./pages/Recruiter";
 import Search from "./pages/Search";
 import AddPost from "./pages/AddPost";
 import Notifications from "./pages/Notifications";
+import SavedPosts from "./pages/SavedPosts";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -128,14 +129,23 @@ function App() {
             </ProtectedRoute>
           }
         />
-      <Route
-  path="/notifications"
-  element={
-    <ProtectedRoute>
-      <Notifications />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/saved-posts"
+          element={
+            <ProtectedRoute>
+              <SavedPosts />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

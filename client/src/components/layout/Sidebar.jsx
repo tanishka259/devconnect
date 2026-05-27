@@ -14,6 +14,7 @@ import {
   FiLogOut,
   FiPlusSquare,
   FiBell,
+  FiBookmark,
 } from "react-icons/fi";
 
 function Sidebar() {
@@ -110,6 +111,11 @@ function Sidebar() {
       <Link to="/recruiter">
         <FiBriefcase size={20} />
         <span>Recruiter</span>
+      </Link>
+
+      <Link to="/saved-posts">
+        <FiBookmark size={20} />
+        <span>Saved</span>
       </Link>
 
       <button className="sidebar-logout-btn" onClick={handleLogout}>
