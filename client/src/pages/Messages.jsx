@@ -22,13 +22,11 @@ function Messages() {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/users`);
-
-      const filteredUsers = response.data.filter(
-        (user) => user._id !== currentUser._id,
+      const response = await axios.get(
+        `${API_URL}/api/connections/${currentUser._id}`,
       );
 
-      setUsers(filteredUsers);
+      setUsers(response.data);
     } catch (error) {
       console.log("Fetch users error:", error);
     }
