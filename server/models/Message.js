@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
@@ -7,20 +7,19 @@ const messageSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
     receiver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+
     text: {
       type: String,
       required: true,
     },
-    seen: {
-      type: Boolean,
-      default: false,
-    },
-    delivered: {
+
+    isRead: {
       type: Boolean,
       default: false,
     },
@@ -28,4 +27,4 @@ const messageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Message", messageSchema);
+module.exports = mongoose.model("Message", messageSchema);
