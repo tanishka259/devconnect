@@ -803,6 +803,7 @@ app.post("/api/direct-message", async (req, res) => {
       sender: senderId,
       receiver: receiverId,
       text,
+      delivered: true,
     });
 
     const populatedMessage = await Message.findById(message._id)
