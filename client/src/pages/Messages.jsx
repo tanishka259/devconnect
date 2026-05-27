@@ -128,8 +128,10 @@ function Messages() {
           {users.map((user) => (
             <div
               key={user._id}
-              className={`chat-user-card ${
-                selectedUser?._id === user._id ? "active-chat-user" : ""
+              className={`chat-user ${
+                selectedUser?._id === user._id
+                  ? "active-chat-user"
+                  : ""
               }`}
               onClick={() => {
                 setSelectedUser(user);
@@ -144,7 +146,7 @@ function Messages() {
                 )}
               </div>
 
-              <div className="chat-user-info">
+              <div>
                 <h4>{user.name}</h4>
 
                 <p className="online-status-text">
@@ -170,40 +172,38 @@ function Messages() {
           {selectedUser ? (
             <>
               <div className="chat-header">
-                <div className="chat-header-user">
-                  <div className="avatar">
-                    {selectedUser.avatar ? (
-                      <img
-                        src={selectedUser.avatar}
-                        alt="avatar"
-                      />
-                    ) : (
-                      selectedUser.name?.charAt(0)
-                    )}
-                  </div>
+                <div className="avatar">
+                  {selectedUser.avatar ? (
+                    <img
+                      src={selectedUser.avatar}
+                      alt="avatar"
+                    />
+                  ) : (
+                    selectedUser.name?.charAt(0)
+                  )}
+                </div>
 
-                  <div>
-                    <h3>{selectedUser.name}</h3>
+                <div>
+                  <h3>{selectedUser.name}</h3>
 
-                    <p>
-                      {isUserOnline(selectedUser._id)
-                        ? "🟢 Online now"
-                        : selectedUser.lastSeen
-                        ? `Last seen ${new Date(
-                            selectedUser.lastSeen
-                          ).toLocaleString([], {
-                            day: "numeric",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}`
-                        : "Offline"}
-                    </p>
-                  </div>
+                  <p>
+                    {isUserOnline(selectedUser._id)
+                      ? "🟢 Online now"
+                      : selectedUser.lastSeen
+                      ? `Last seen ${new Date(
+                          selectedUser.lastSeen
+                        ).toLocaleString([], {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}`
+                      : "Offline"}
+                  </p>
                 </div>
               </div>
 
-              <div className="messages-container">
+              <div className="chat-messages">
                 {messages.map((message) => (
                   <div
                     key={message._id}
@@ -216,7 +216,9 @@ function Messages() {
                     <p>{message.text}</p>
 
                     <small>
-                      {new Date(message.createdAt).toLocaleTimeString([], {
+                      {new Date(
+                        message.createdAt
+                      ).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -233,7 +235,7 @@ function Messages() {
                 <div ref={messagesEndRef}></div>
               </div>
 
-              <div className="chat-input-box">
+              <div className="chat-input">
                 <input
                   type="text"
                   placeholder="Type your message..."
