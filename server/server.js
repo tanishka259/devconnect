@@ -111,11 +111,9 @@ app.post("/api/login", async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     res.json({
       message: "Login successful",
@@ -176,7 +174,7 @@ app.put("/api/users/:id", async (req, res) => {
         location,
         role,
       },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     res.json({
@@ -200,7 +198,7 @@ app.post("/api/users/:id/avatar", upload.single("avatar"), async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       { avatar: result.secure_url },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     fs.unlinkSync(req.file.path);
@@ -236,7 +234,10 @@ app.post("/api/posts", upload.single("image"), async (req, res) => {
 
     const techArray =
       typeof tech === "string"
-        ? tech.split(",").map((item) => item.trim()).filter(Boolean)
+        ? tech
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
         : [];
 
     const post = await Post.create({
@@ -290,14 +291,10 @@ app.put("/api/posts/:id/like", async (req, res) => {
       });
     }
 
-    const alreadyLiked = post.likes.some(
-      (id) => id.toString() === userId
-    );
+    const alreadyLiked = post.likes.some((id) => id.toString() === userId);
 
     if (alreadyLiked) {
-      post.likes = post.likes.filter(
-        (id) => id.toString() !== userId
-      );
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
       post.likes.push(userId);
     }
@@ -423,7 +420,7 @@ app.post("/api/projects", async (req, res) => {
 
     const populatedProject = await Project.findById(project._id).populate(
       "user",
-      "name email avatar role"
+      "name email avatar role",
     );
 
     res.json({
@@ -499,7 +496,7 @@ app.post("/api/snippets", async (req, res) => {
 
     const populatedSnippet = await Snippet.findById(snippet._id).populate(
       "user",
-      "name email avatar role"
+      "name email avatar role",
     );
 
     res.json({
@@ -567,11 +564,11 @@ app.get("/api/github/:username", async (req, res) => {
     const { username } = req.params;
 
     const profileResponse = await axios.get(
-      `https://api.github.com/users/${username}`
+      `https://api.github.com/users/${username}`,
     );
 
     const reposResponse = await axios.get(
-      `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`
+      `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`,
     );
 
     res.json({
@@ -628,7 +625,7 @@ app.get("/api/connections/requests/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).populate(
       "connectionRequests",
-      "name email avatar role"
+      "name email avatar role",
     );
 
     res.json(user.connectionRequests);
@@ -656,7 +653,7 @@ app.post("/api/connections/accept", async (req, res) => {
     }
 
     user.connectionRequests = user.connectionRequests.filter(
-      (id) => id.toString() !== senderId
+      (id) => id.toString() !== senderId,
     );
 
     await user.save();
@@ -677,13 +674,13 @@ app.get("/api/connections/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).populate(
       "connections",
-      "name email avatar role"
+      "name email avatar role",
     );
 
     const uniqueConnections = user.connections.filter(
       (person, index, self) =>
         index ===
-        self.findIndex((p) => p._id.toString() === person._id.toString())
+        self.findIndex((p) => p._id.toString() === person._id.toString()),
     );
 
     res.json(uniqueConnections);
@@ -703,19 +700,19 @@ app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
 
     const profileUser = await User.findById(profileId).populate(
       "connections",
-      "name email avatar role"
+      "name email avatar role",
     );
 
     const mutuals = profileUser.connections.filter((connection) =>
       currentUser.connections.some(
-        (id) => id.toString() === connection._id.toString()
-      )
+        (id) => id.toString() === connection._id.toString(),
+      ),
     );
 
     const uniqueMutuals = mutuals.filter(
       (person, index, self) =>
         index ===
-        self.findIndex((p) => p._id.toString() === person._id.toString())
+        self.findIndex((p) => p._id.toString() === person._id.toString()),
     );
 
     res.json({
@@ -755,7 +752,7 @@ app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
         receiver: req.params.userId,
         sender: req.params.senderId,
       },
-      { isRead: true }
+      { isRead: true },
     );
 
     res.json({
@@ -943,7 +940,7 @@ app.put("/api/jobs/:id/apply", async (req, res) => {
     }
 
     const alreadyApplied = job.applicants.some(
-      (id) => id.toString() === userId
+      (id) => id.toString() === userId,
     );
 
     if (!alreadyApplied) {
@@ -1045,7 +1042,7 @@ app.put("/api/notifications/read/:userId", async (req, res) => {
   try {
     await Notification.updateMany(
       { receiver: req.params.userId },
-      { isRead: true }
+      { isRead: true },
     );
 
     res.json({
@@ -1095,31 +1092,31 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
       strengths.push(
         `You have listed relevant skills like ${user.skills
           .slice(0, 4)
-          .join(", ")}.`
+          .join(", ")}.`,
       );
     }
 
     if (projects.length > 0) {
       strengths.push(
-        `You have ${projects.length} project(s), which helps recruiters understand your practical work.`
+        `You have ${projects.length} project(s), which helps recruiters understand your practical work.`,
       );
     }
 
     if (snippets.length > 0) {
       strengths.push(
-        `You have added ${snippets.length} code snippet(s), showing your coding practice.`
+        `You have added ${snippets.length} code snippet(s), showing your coding practice.`,
       );
     }
 
     if (user.githubUsername) {
       strengths.push(
-        "Your GitHub profile is connected, which improves your technical credibility."
+        "Your GitHub profile is connected, which improves your technical credibility.",
       );
     }
 
     if (strengths.length === 0) {
       strengths.push(
-        "Your profile has a good starting structure, but it needs more details."
+        "Your profile has a good starting structure, but it needs more details.",
       );
     }
 
@@ -1127,7 +1124,7 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
 
     if (!user.bio || user.bio.length < 40) {
       weakAreas.push(
-        "Your bio is short. Add a clearer introduction about your role, goals, and tech interests."
+        "Your bio is short. Add a clearer introduction about your role, goals, and tech interests.",
       );
     }
 
@@ -1137,13 +1134,13 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
 
     if (!user.githubUsername) {
       weakAreas.push(
-        "Connect your GitHub username to show repositories and coding activity."
+        "Connect your GitHub username to show repositories and coding activity.",
       );
     }
 
     if (projects.length < 2) {
       weakAreas.push(
-        "Add more projects with description, tech stack, GitHub link, and live demo."
+        "Add more projects with description, tech stack, GitHub link, and live demo.",
       );
     }
 
@@ -1153,7 +1150,7 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
 
     if (weakAreas.length === 0) {
       weakAreas.push(
-        "Your profile is strong. Focus on polishing project descriptions and adding live demos."
+        "Your profile is strong. Focus on polishing project descriptions and adding live demos.",
       );
     }
 
@@ -1163,7 +1160,7 @@ app.post("/api/ai/portfolio-review/:userId", async (req, res) => {
             .slice(0, 3)
             .map(
               (project, index) =>
-                `${index + 1}. ${project.title}: Add clear problem statement, features, tech stack, GitHub link, and live demo if missing.`
+                `${index + 1}. ${project.title}: Add clear problem statement, features, tech stack, GitHub link, and live demo if missing.`,
             )
             .join("\n")
         : "Add at least 2 portfolio-level projects such as MERN social app, dashboard, AI tool, or real-time chat app.";
@@ -1217,13 +1214,11 @@ app.put("/api/posts/:postId/save", async (req, res) => {
       });
     }
 
-    const alreadySaved = user.savedPosts.some(
-      (id) => id.toString() === postId
-    );
+    const alreadySaved = user.savedPosts.some((id) => id.toString() === postId);
 
     if (alreadySaved) {
       user.savedPosts = user.savedPosts.filter(
-        (id) => id.toString() !== postId
+        (id) => id.toString() !== postId,
       );
     } else {
       user.savedPosts.push(postId);
@@ -1289,15 +1284,11 @@ app.get("/api/trending", async (req, res) => {
         const commentsCount = post.comments?.length || 0;
 
         const hoursOld =
-          (Date.now() - new Date(post.createdAt).getTime()) /
-          (1000 * 60 * 60);
+          (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60);
 
         const recencyBoost = Math.max(0, 24 - hoursOld);
 
-        const score =
-          likesCount * 3 +
-          commentsCount * 2 +
-          recencyBoost;
+        const score = likesCount * 3 + commentsCount * 2 + recencyBoost;
 
         return {
           ...post.toObject(),
@@ -1312,17 +1303,17 @@ app.get("/api/trending", async (req, res) => {
     const topDevelopers = users
       .map((user) => {
         const userPosts = posts.filter(
-          (post) => post.user?._id.toString() === user._id.toString()
+          (post) => post.user?._id.toString() === user._id.toString(),
         );
 
         const totalLikes = userPosts.reduce(
           (sum, post) => sum + (post.likes?.length || 0),
-          0
+          0,
         );
 
         const totalComments = userPosts.reduce(
           (sum, post) => sum + (post.comments?.length || 0),
-          0
+          0,
         );
 
         return {
@@ -1378,8 +1369,13 @@ const onlineUsers = new Map();
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("user-online", (userId) => {
+  socket.on("user-online", async (userId) => {
     onlineUsers.set(userId, socket.id);
+
+    await User.findByIdAndUpdate(userId, {
+      lastSeen: new Date(),
+    });
+
     io.emit("online-users", Array.from(onlineUsers.keys()));
   });
 
@@ -1440,6 +1436,10 @@ io.on("connection", (socket) => {
 
     if (disconnectedUserId) {
       onlineUsers.delete(disconnectedUserId);
+
+      User.findByIdAndUpdate(disconnectedUserId, {
+        lastSeen: new Date(),
+      }).catch((error) => console.log(error));
     }
 
     io.emit("online-users", Array.from(onlineUsers.keys()));

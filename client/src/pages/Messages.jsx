@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 
@@ -11,23 +11,27 @@ function Messages() {
 
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+
   const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
+  const [messageText, setMessageText] = useState("");
+
   const [onlineUsers, setOnlineUsers] = useState([]);
+
   const [typingUser, setTypingUser] = useState(null);
+
+  const messagesEndRef = useRef(null);
 
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        `https://devconnect-api-hwvw.onrender.com/api/connections/${currentUser._id}`,
+        "https://devconnect-api-hwvw.onrender.com/api/users"
       );
 
-      const uniqueUsers = response.data.filter(
-        (user, index, self) =>
-          index === self.findIndex((u) => u._id === user._id),
+      const filteredUsers = response.data.filter(
+        (user) => user._id !== currentUser._id
       );
 
-      setUsers(uniqueUsers);
+      setUsers(filteredUsers);
     } catch (error) {
       console.log(error);
     }
@@ -36,140 +40,126 @@ function Messages() {
   const fetchMessages = async (userId) => {
     try {
       const response = await axios.get(
-        `https://devconnect-api-hwvw.onrender.com/api/messages/${currentUser._id}/${userId}`,
+        `https://devconnect-api-hwvw.onrender.com/api/messages/${currentUser._id}/${userId}`
       );
 
       setMessages(response.data);
+
+      await axios.put(
+        `https://devconnect-api-hwvw.onrender.com/api/messages/read/${currentUser._id}/${userId}`
+      );
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(() => {
-  fetchUsers();
-
-  socket.emit("user-online", currentUser._id);
-
-  socket.on("online-users", (users) => {
-    setOnlineUsers(users);
-  });
-
-  socket.on("receive-message", (message) => {
-    if (
-      selectedUser &&
-      (message.sender._id === selectedUser._id ||
-        message.receiver._id === selectedUser._id)
-    ) {
-      setMessages((prev) => [...prev, message]);
-    }
-  });
-
-  socket.on("user-typing", (data) => {
-    if (
-      data.receiverId === currentUser._id &&
-      selectedUser &&
-      data.senderId === selectedUser._id
-    ) {
-      setTypingUser(data.senderName);
-    }
-  });
-
-  socket.on("user-stop-typing", (data) => {
-    if (
-      data.receiverId === currentUser._id &&
-      selectedUser &&
-      data.senderId === selectedUser._id
-    ) {
-      setTypingUser(null);
-    }
-  });
-
-  return () => {
-    socket.off("online-users");
-    socket.off("receive-message");
-    socket.off("user-typing");
-    socket.off("user-stop-typing");
-  };
-}, [selectedUser]);
-
-  const handleSelectUser = async (user) => {
-    setSelectedUser(user);
-
-    await fetchMessages(user._id);
-
-    await axios.put(
-      `https://devconnect-api-hwvw.onrender.com/api/messages/read/${currentUser._id}/${user._id}`,
-    );
-  };
-
-  const handleSendMessage = () => {
-    if (!text.trim() || !selectedUser) return;
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) return;
 
     socket.emit("send-message", {
       sender: currentUser._id,
       receiver: selectedUser._id,
-      text,
+      text: messageText,
     });
 
-    setText("");
+    setMessageText("");
+
+    socket.emit("stop-typing", {
+      senderId: currentUser._id,
+      receiverId: selectedUser._id,
+    });
   };
 
   const isUserOnline = (userId) => {
     return onlineUsers.includes(userId);
   };
 
-  let typingTimeout;
+  useEffect(() => {
+    fetchUsers();
 
-  const handleTyping = (e) => {
-    setText(e.target.value);
+    socket.emit("user-online", currentUser._id);
 
-    if (!selectedUser) return;
-
-    socket.emit("typing", {
-      senderId: currentUser._id,
-      receiverId: selectedUser._id,
-      senderName: currentUser.name,
+    socket.on("online-users", (users) => {
+      setOnlineUsers(users);
     });
 
-    clearTimeout(typingTimeout);
+    socket.on("receive-message", (message) => {
+      if (
+        message.sender._id === selectedUser?._id ||
+        message.receiver._id === selectedUser?._id
+      ) {
+        setMessages((prev) => [...prev, message]);
+      }
+    });
 
-    typingTimeout = setTimeout(() => {
-      socket.emit("stop-typing", {
-        senderId: currentUser._id,
-        receiverId: selectedUser._id,
-      });
-    }, 1000);
-  };
+    socket.on("user-typing", ({ senderId, receiverId, senderName }) => {
+      if (
+        senderId === selectedUser?._id &&
+        receiverId === currentUser._id
+      ) {
+        setTypingUser(senderName);
+      }
+    });
+
+    socket.on("user-stop-typing", () => {
+      setTypingUser(null);
+    });
+
+    return () => {
+      socket.off("online-users");
+      socket.off("receive-message");
+      socket.off("user-typing");
+      socket.off("user-stop-typing");
+    };
+  }, [selectedUser]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, typingUser]);
 
   return (
     <MainLayout>
       <div className="messages-page">
         <div className="chat-users">
-          <h2>Developers</h2>
+          <h2>Messages</h2>
 
           {users.map((user) => (
             <div
-              className={`chat-user ${
+              key={user._id}
+              className={`chat-user-card ${
                 selectedUser?._id === user._id ? "active-chat-user" : ""
               }`}
-              key={user._id}
-              onClick={() => handleSelectUser(user)}
+              onClick={() => {
+                setSelectedUser(user);
+                fetchMessages(user._id);
+              }}
             >
-              <div className="avatar online-avatar-wrapper">
+              <div className="avatar">
                 {user.avatar ? (
                   <img src={user.avatar} alt="avatar" />
                 ) : (
                   user.name?.charAt(0)
                 )}
-
-                {isUserOnline(user._id) && <span className="online-dot"></span>}
               </div>
 
-              <div>
-                <span>{user.name}</span>
+              <div className="chat-user-info">
+                <h4>{user.name}</h4>
 
                 <p className="online-status-text">
-                  {isUserOnline(user._id) ? "Online" : "Offline"}
+                  {isUserOnline(user._id)
+                    ? "🟢 Online"
+                    : user.lastSeen
+                    ? `Last seen ${new Date(
+                        user.lastSeen
+                      ).toLocaleString([], {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}`
+                    : "Offline"}
                 </p>
               </div>
             </div>
@@ -180,17 +170,40 @@ function Messages() {
           {selectedUser ? (
             <>
               <div className="chat-header">
-                <h2>{selectedUser.name}</h2>
+                <div className="chat-header-user">
+                  <div className="avatar">
+                    {selectedUser.avatar ? (
+                      <img
+                        src={selectedUser.avatar}
+                        alt="avatar"
+                      />
+                    ) : (
+                      selectedUser.name?.charAt(0)
+                    )}
+                  </div>
 
-                <p>
-                  {isUserOnline(selectedUser._id) ? "🟢 Online now" : "Offline"}
-                  {typingUser && (
-                    <p className="typing-text">{typingUser} is typing...</p>
-                  )}
-                </p>
+                  <div>
+                    <h3>{selectedUser.name}</h3>
+
+                    <p>
+                      {isUserOnline(selectedUser._id)
+                        ? "🟢 Online now"
+                        : selectedUser.lastSeen
+                        ? `Last seen ${new Date(
+                            selectedUser.lastSeen
+                          ).toLocaleString([], {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}`
+                        : "Offline"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="chat-messages">
+              <div className="messages-container">
                 {messages.map((message) => (
                   <div
                     key={message._id}
@@ -202,30 +215,55 @@ function Messages() {
                   >
                     <p>{message.text}</p>
 
-                    <span className="message-time">
+                    <small>
                       {new Date(message.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
-                    </span>
+                    </small>
                   </div>
                 ))}
+
+                {typingUser && (
+                  <div className="typing-indicator">
+                    {typingUser} is typing...
+                  </div>
+                )}
+
+                <div ref={messagesEndRef}></div>
               </div>
 
-              <div className="chat-input">
+              <div className="chat-input-box">
                 <input
                   type="text"
-                  placeholder="Type message..."
-                  value={text}
-                  onChange={handleTyping}
+                  placeholder="Type your message..."
+                  value={messageText}
+                  onChange={(e) => {
+                    setMessageText(e.target.value);
+
+                    socket.emit("typing", {
+                      senderId: currentUser._id,
+                      receiverId: selectedUser._id,
+                      senderName: currentUser.name,
+                    });
+
+                    setTimeout(() => {
+                      socket.emit("stop-typing", {
+                        senderId: currentUser._id,
+                        receiverId: selectedUser._id,
+                      });
+                    }, 1200);
+                  }}
                 />
 
-                <button onClick={handleSendMessage}>Send</button>
+                <button onClick={handleSendMessage}>
+                  Send
+                </button>
               </div>
             </>
           ) : (
             <div className="empty-chat">
-              <h2>Select a developer to start chatting</h2>
+              <h2>Select a user to start chatting</h2>
             </div>
           )}
         </div>

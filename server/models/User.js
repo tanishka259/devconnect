@@ -62,6 +62,11 @@ savedPosts: [
   },
 ],
 
+lastSeen: {
+  type: Date,
+  default: Date.now,
+},
+
 connectionRequests: [
   {
     type: mongoose.Schema.Types.ObjectId,
