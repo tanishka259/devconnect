@@ -4,8 +4,7 @@ import { io } from "socket.io-client";
 
 import MainLayout from "../layouts/MainLayout";
 
-const API_URL = "https://devconnect-api-hwvw.onrender.com";
-const socket = io(API_URL);
+const socket = io("https://devconnect-api-hwvw.onrender.com");
 
 function Messages() {
   const currentUser = JSON.parse(localStorage.getItem("user"));
@@ -17,31 +16,19 @@ function Messages() {
   const [messageText, setMessageText] = useState("");
 
   const [onlineUsers, setOnlineUsers] = useState([]);
+
   const [typingUser, setTypingUser] = useState(null);
 
   const messagesEndRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
-
-  const getSenderId = (message) => {
-    return message.sender?._id || message.sender;
-  };
-
-  const getReceiverId = (message) => {
-    return message.receiver?._id || message.receiver;
-  };
-
-  const getMessageStatus = (message) => {
-    if (message.seen) return "✓✓ Seen";
-    if (message.delivered) return "✓✓ Delivered";
-    return "✓ Sent";
-  };
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/users`);
+      const response = await axios.get(
+        "https://devconnect-api-hwvw.onrender.com/api/users",
+      );
 
       const filteredUsers = response.data.filter(
-        (user) => user._id !== currentUser._id
+        (user) => user._id !== currentUser._id,
       );
 
       setUsers(filteredUsers);
@@ -53,21 +40,21 @@ function Messages() {
   const fetchMessages = async (userId) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/messages/${currentUser._id}/${userId}`
+        `https://devconnect-api-hwvw.onrender.com/api/messages/${currentUser._id}/${userId}`,
       );
 
       setMessages(response.data);
 
       await axios.put(
-        `${API_URL}/api/messages/read/${currentUser._id}/${userId}`
+        `https://devconnect-api-hwvw.onrender.com/api/messages/read/${currentUser._id}/${userId}`,
       );
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleSendMessage = () => {
-    if (!messageText.trim() || !selectedUser) return;
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) return;
 
     socket.emit("send-message", {
       sender: currentUser._id,
@@ -81,29 +68,6 @@ function Messages() {
       senderId: currentUser._id,
       receiverId: selectedUser._id,
     });
-  };
-
-  const handleTyping = (e) => {
-    setMessageText(e.target.value);
-
-    if (!selectedUser) return;
-
-    socket.emit("typing", {
-      senderId: currentUser._id,
-      receiverId: selectedUser._id,
-      senderName: currentUser.name,
-    });
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit("stop-typing", {
-        senderId: currentUser._id,
-        receiverId: selectedUser._id,
-      });
-    }, 1200);
   };
 
   const isUserOnline = (userId) => {
@@ -120,12 +84,9 @@ function Messages() {
     });
 
     socket.on("receive-message", (message) => {
-      const senderId = getSenderId(message);
-      const receiverId = getReceiverId(message);
-
       if (
-        senderId === selectedUser?._id ||
-        receiverId === selectedUser?._id
+        message.sender._id === selectedUser?._id ||
+        message.receiver._id === selectedUser?._id
       ) {
         setMessages((prev) => [...prev, message]);
       }
@@ -154,6 +115,12 @@ function Messages() {
       behavior: "smooth",
     });
   }, [messages, typingUser]);
+
+  const getMessageStatus = (msg) => {
+    if (msg.seen) return "✓✓ Seen";
+    if (msg.delivered) return "✓✓ Delivered";
+    return "✓ Sent";
+  };
 
   return (
     <MainLayout>
@@ -187,13 +154,16 @@ function Messages() {
                   {isUserOnline(user._id)
                     ? "🟢 Online"
                     : user.lastSeen
-                    ? `Last seen ${new Date(user.lastSeen).toLocaleString([], {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}`
-                    : "Offline"}
+                      ? `Last seen ${new Date(user.lastSeen).toLocaleString(
+                          [],
+                          {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}`
+                      : "Offline"}
                 </p>
               </div>
             </div>
@@ -219,50 +189,49 @@ function Messages() {
                     {isUserOnline(selectedUser._id)
                       ? "🟢 Online now"
                       : selectedUser.lastSeen
-                      ? `Last seen ${new Date(
-                          selectedUser.lastSeen
-                        ).toLocaleString([], {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}`
-                      : "Offline"}
+                        ? `Last seen ${new Date(
+                            selectedUser.lastSeen,
+                          ).toLocaleString([], {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}`
+                        : "Offline"}
                   </p>
                 </div>
               </div>
 
               <div className="chat-messages">
-                {messages.map((message) => {
-                  const isMyMessage = getSenderId(message) === currentUser._id;
+                {messages.map((message) => (
+                  <div
+                    key={message._id}
+                    className={
+                      message.sender._id === currentUser._id
+                        ? "my-message"
+                        : "other-message"
+                    }
+                  >
+                    <p>{message.text}</p>
 
-                  return (
-                    <div
-                      key={message._id}
-                      className={isMyMessage ? "my-message" : "other-message"}
-                    >
-                      <p>{message.text}</p>
+                    <small>
+                      {new Date(message.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </small>
 
-                      <small>
-                        {new Date(message.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </small>
-
-                      {isMyMessage && (
-                        <span className="message-status">
-                          {getMessageStatus(message)}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
+                    {message.sender._id === currentUser._id && (
+                      <span className="message-status">
+                        {getMessageStatus(message)}
+                      </span>
+                    )}
+                  </div>
+                ))}
 
                 {typingUser && (
                   <div className="typing-indicator">
                     <span>{typingUser} is typing</span>
-
                     <div className="typing-dots">
                       <b></b>
                       <b></b>
@@ -279,11 +248,21 @@ function Messages() {
                   type="text"
                   placeholder="Type your message..."
                   value={messageText}
-                  onChange={handleTyping}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSendMessage();
-                    }
+                  onChange={(e) => {
+                    setMessageText(e.target.value);
+
+                    socket.emit("typing", {
+                      senderId: currentUser._id,
+                      receiverId: selectedUser._id,
+                      senderName: currentUser.name,
+                    });
+
+                    setTimeout(() => {
+                      socket.emit("stop-typing", {
+                        senderId: currentUser._id,
+                        receiverId: selectedUser._id,
+                      });
+                    }, 1200);
                   }}
                 />
 
