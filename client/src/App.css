@@ -3531,3 +3531,11 @@ select:focus {
     transform: translateY(0);
   }
 }
+
+.message-status {
+  display: block;
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 3px;
+  text-align: right;
+}
