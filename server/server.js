@@ -1274,6 +1274,103 @@ app.get("/api/users/:userId/saved-posts", async (req, res) => {
   }
 });
 
+/* TRENDING */
+
+app.get("/api/trending", async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .populate("user", "name email avatar role skills")
+      .populate("comments.user", "name email avatar role")
+      .sort({ createdAt: -1 });
+
+    const trendingPosts = posts
+      .map((post) => {
+        const likesCount = post.likes?.length || 0;
+        const commentsCount = post.comments?.length || 0;
+
+        const hoursOld =
+          (Date.now() - new Date(post.createdAt).getTime()) /
+          (1000 * 60 * 60);
+
+        const recencyBoost = Math.max(0, 24 - hoursOld);
+
+        const score =
+          likesCount * 3 +
+          commentsCount * 2 +
+          recencyBoost;
+
+        return {
+          ...post.toObject(),
+          trendingScore: Math.round(score),
+        };
+      })
+      .sort((a, b) => b.trendingScore - a.trendingScore)
+      .slice(0, 5);
+
+    const users = await User.find().select("-password");
+
+    const topDevelopers = users
+      .map((user) => {
+        const userPosts = posts.filter(
+          (post) => post.user?._id.toString() === user._id.toString()
+        );
+
+        const totalLikes = userPosts.reduce(
+          (sum, post) => sum + (post.likes?.length || 0),
+          0
+        );
+
+        const totalComments = userPosts.reduce(
+          (sum, post) => sum + (post.comments?.length || 0),
+          0
+        );
+
+        return {
+          _id: user._id,
+          name: user.name,
+          avatar: user.avatar,
+          role: user.role,
+          skills: user.skills,
+          score: totalLikes * 3 + totalComments * 2 + userPosts.length,
+        };
+      })
+      .filter((user) => user.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    const tagMap = {};
+
+    posts.forEach((post) => {
+      post.tech?.forEach((tag) => {
+        const cleanTag = tag.trim();
+
+        if (cleanTag) {
+          tagMap[cleanTag] = (tagMap[cleanTag] || 0) + 1;
+        }
+      });
+    });
+
+    const trendingTags = Object.entries(tagMap)
+      .map(([tag, count]) => ({
+        tag,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+
+    res.json({
+      trendingPosts,
+      topDevelopers,
+      trendingTags,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error fetching trending data",
+    });
+  }
+});
+
 /* SOCKET.IO */
 
 const onlineUsers = new Map();
