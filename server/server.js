@@ -752,16 +752,18 @@ app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
         receiver: req.params.userId,
         sender: req.params.senderId,
       },
-      { isRead: true },
+      {
+        seen: true,
+      }
     );
 
     res.json({
-      message: "Messages marked as read",
+      message: "Messages marked as seen",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Read message error:", error);
     res.status(500).json({
-      message: "Error marking messages as read",
+      message: "Error marking messages as seen",
     });
   }
 });
@@ -782,7 +784,7 @@ app.get("/api/messages/:user1/:user2", async (req, res) => {
 
     res.json(messages);
   } catch (error) {
-    console.log(error);
+    console.log("Fetch messages error:", error);
     res.status(500).json({
       message: "Error fetching messages",
     });
@@ -804,6 +806,7 @@ app.post("/api/direct-message", async (req, res) => {
       receiver: receiverId,
       text,
       delivered: true,
+      seen: false,
     });
 
     const populatedMessage = await Message.findById(message._id)
@@ -815,7 +818,7 @@ app.post("/api/direct-message", async (req, res) => {
       data: populatedMessage,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Send message error:", error);
     res.status(500).json({
       message: "Error sending message",
     });
