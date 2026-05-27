@@ -731,17 +731,17 @@ app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
 
 app.get("/api/messages/unread-count/:userId", async (req, res) => {
   try {
-    const count = await Message.countDocuments({
-      receiver: req.params.userId,
-      isRead: false,
+    const { userId } = req.params;
+
+    const unreadCount = await Message.countDocuments({
+      receiver: userId,
+      seen: false,
     });
 
-    res.json({ count });
+    res.json({ unreadCount });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: "Error fetching unread message count",
-    });
+    console.log("Unread count error:", error);
+    res.status(500).json({ message: "Unread count error" });
   }
 });
 
