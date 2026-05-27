@@ -729,70 +729,48 @@ app.get("/api/connections/mutual/:userId/:profileId", async (req, res) => {
 
 /* MESSAGES */
 
+/* UNREAD MESSAGE COUNT - ALWAYS FIRST */
 app.get("/api/messages/unread-count/:userId", async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    if (!userId || userId === "undefined" || userId === "null") {
-      return res.json({
-        unreadCount: 0,
-        count: 0,
-      });
-    }
-
-    const unreadCount = await Message.countDocuments({
-      receiver: userId,
-      $or: [
-        { seen: false },
-        { seen: { $exists: false } },
-        { isRead: false },
-        { isRead: { $exists: false } },
-      ],
+    const count = await Message.countDocuments({
+      receiver: req.params.userId,
+      isRead: false,
     });
 
-    res.json({
-      unreadCount,
-      count: unreadCount,
-    });
+    res.json({ count });
   } catch (error) {
-    console.log("Unread count error:", error.message);
-    res.json({
-      unreadCount: 0,
-      count: 0,
+    console.log("Unread count error:", error);
+    res.status(500).json({
+      message: "Error fetching unread message count",
     });
   }
 });
 
+/* MARK CONVERSATION AS READ - SECOND */
 app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
   try {
-    const { userId, senderId } = req.params;
-
-    if (!userId || !senderId) {
-      return res.json({ message: "Invalid user details" });
-    }
-
     await Message.updateMany(
       {
-        receiver: userId,
-        sender: senderId,
+        receiver: req.params.userId,
+        sender: req.params.senderId,
       },
       {
-        seen: true,
         isRead: true,
       }
     );
 
     res.json({
-      message: "Messages marked as seen",
+      message: "Messages marked as read",
     });
   } catch (error) {
-    console.log("Read message error:", error.message);
-    res.json({
-      message: "Read route skipped safely",
+    console.log("Mark read error:", error);
+    res.status(500).json({
+      message: "Error marking messages as read",
     });
   }
 });
 
+/* GET MESSAGES BETWEEN TWO USERS - ALWAYS LAST */
 app.get("/api/messages/:user1/:user2", async (req, res) => {
   try {
     const { user1, user2 } = req.params;
@@ -816,6 +794,7 @@ app.get("/api/messages/:user1/:user2", async (req, res) => {
   }
 });
 
+/* DIRECT MESSAGE */
 app.post("/api/direct-message", async (req, res) => {
   try {
     const { senderId, receiverId, text } = req.body;
@@ -830,8 +809,7 @@ app.post("/api/direct-message", async (req, res) => {
       sender: senderId,
       receiver: receiverId,
       text,
-      delivered: true,
-      seen: false,
+      isRead: false,
     });
 
     const populatedMessage = await Message.findById(message._id)
@@ -843,7 +821,7 @@ app.post("/api/direct-message", async (req, res) => {
       data: populatedMessage,
     });
   } catch (error) {
-    console.log("Send message error:", error);
+    console.log("Direct message error:", error);
     res.status(500).json({
       message: "Error sending message",
     });
