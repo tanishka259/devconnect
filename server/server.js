@@ -1465,11 +1465,9 @@ app.get("/api/search/:query", async (req, res) => {
 
 /* PUBLIC DEV PROFILE */
 
-app.get("/api/dev/:username", async (req, res) => {
+app.get("/api/dev/:id", async (req, res) => {
   try {
-    const user = await User.findOne({
-      username: req.params.username,
-    }).select("-password");
+    const user = await User.findById(req.params.id).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -1491,8 +1489,7 @@ app.get("/api/dev/:username", async (req, res) => {
       snippets,
     });
   } catch (error) {
-    console.log(error);
-
+    console.log("Public dev profile error:", error);
     res.status(500).json({
       message: "Error fetching developer profile",
     });

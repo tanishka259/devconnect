@@ -3,14 +3,14 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 
 function DevProfile() {
-  const { username } = useParams();
+  const { id } = useParams();
 
   const [data, setData] = useState(null);
 
   const fetchProfile = async () => {
     try {
       const response = await axios.get(
-        `https://devconnect-api-hwvw.onrender.com/api/dev/${username}`
+        `https://devconnect-api-hwvw.onrender.com/api/dev/${id}`
       );
 
       setData(response.data);
