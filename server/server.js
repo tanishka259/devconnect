@@ -1369,6 +1369,63 @@ app.get("/api/trending", async (req, res) => {
   }
 });
 
+/* RECRUITER ANALYTICS */
+
+app.get("/api/recruiter/analytics/:recruiterId", async (req, res) => {
+  try {
+    const { recruiterId } = req.params;
+
+    const jobs = await Job.find({
+      recruiter: recruiterId,
+    }).populate("applicants", "name email avatar role skills");
+
+    const totalJobs = jobs.length;
+
+    const totalApplicants = jobs.reduce(
+      (sum, job) => sum + job.applicants.length,
+      0
+    );
+
+    const activeJobs = jobs.filter(
+      (job) => job.applicants.length < 10
+    ).length;
+
+    const skillMap = {};
+
+    jobs.forEach((job) => {
+      job.applicants.forEach((applicant) => {
+        applicant.skills?.forEach((skill) => {
+          const cleanSkill = skill.trim();
+
+          if (cleanSkill) {
+            skillMap[cleanSkill] = (skillMap[cleanSkill] || 0) + 1;
+          }
+        });
+      });
+    });
+
+    const topSkills = Object.entries(skillMap)
+      .map(([skill, count]) => ({
+        skill,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    res.json({
+      totalJobs,
+      totalApplicants,
+      activeJobs,
+      topSkills,
+    });
+  } catch (error) {
+    console.log("Recruiter analytics error:", error);
+    res.status(500).json({
+      message: "Error fetching recruiter analytics",
+    });
+  }
+});
+
 /* SOCKET.IO */
 
 const onlineUsers = new Map();

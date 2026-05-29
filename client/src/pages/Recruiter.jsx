@@ -7,6 +7,13 @@ import MainLayout from "../layouts/MainLayout";
 function Recruiter() {
   const user = JSON.parse(localStorage.getItem("user"));
 
+  const [analytics, setAnalytics] = useState({
+    totalJobs: 0,
+    totalApplicants: 0,
+    activeJobs: 0,
+    topSkills: [],
+  });
+
   const [jobs, setJobs] = useState([]);
 
   const [title, setTitle] = useState("");
@@ -19,12 +26,15 @@ function Recruiter() {
   const [messageText, setMessageText] = useState({});
 
   const fetchJobs = async () => {
-    const response = await axios.get("https://devconnect-api-hwvw.onrender.com/api/jobs");
+    const response = await axios.get(
+      "https://devconnect-api-hwvw.onrender.com/api/jobs",
+    );
     setJobs(response.data);
   };
 
   useEffect(() => {
     fetchJobs();
+    fetchAnalytics();
   }, []);
 
   const handleCreateJob = async () => {
@@ -55,6 +65,7 @@ function Recruiter() {
     setDescription("");
 
     fetchJobs();
+    fetchAnalytics();
   };
 
   const handleApply = async (jobId) => {
@@ -62,21 +73,38 @@ function Recruiter() {
       `https://devconnect-api-hwvw.onrender.com/api/jobs/${jobId}/apply`,
       {
         userId: user._id,
-      }
+      },
     );
 
     alert(response.data.message);
     fetchJobs();
+    fetchAnalytics();
   };
 
   const handleDelete = async (jobId) => {
-    await axios.delete(`https://devconnect-api-hwvw.onrender.com/api/jobs/${jobId}`, {
-      data: {
-        userId: user._id,
+    await axios.delete(
+      `https://devconnect-api-hwvw.onrender.com/api/jobs/${jobId}`,
+      {
+        data: {
+          userId: user._id,
+        },
       },
-    });
+    );
 
     fetchJobs();
+    fetchAnalytics();
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/recruiter/analytics/${user._id}`,
+      );
+
+      setAnalytics(response.data);
+    } catch (error) {
+      console.log("Analytics error:", error);
+    }
   };
 
   const handleDirectMessage = async (receiverId) => {
@@ -86,11 +114,14 @@ function Recruiter() {
       return alert("Please write a message");
     }
 
-    await axios.post("https://devconnect-api-hwvw.onrender.com/api/direct-message", {
-      senderId: user._id,
-      receiverId,
-      text,
-    });
+    await axios.post(
+      "https://devconnect-api-hwvw.onrender.com/api/direct-message",
+      {
+        senderId: user._id,
+        receiverId,
+        text,
+      },
+    );
 
     setMessageText({
       ...messageText,
@@ -127,10 +158,7 @@ function Recruiter() {
             onChange={(e) => setLocation(e.target.value)}
           />
 
-          <select
-            value={jobType}
-            onChange={(e) => setJobType(e.target.value)}
-          >
+          <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
             <option>Full-time</option>
             <option>Part-time</option>
             <option>Internship</option>
@@ -154,10 +182,43 @@ function Recruiter() {
           <button onClick={handleCreateJob}>Publish Job</button>
         </div>
 
+        <div className="recruiter-analytics">
+          <div className="analytics-card">
+            <h3>{analytics.totalJobs}</h3>
+            <p>Jobs Posted</p>
+          </div>
+
+          <div className="analytics-card">
+            <h3>{analytics.totalApplicants}</h3>
+            <p>Total Applicants</p>
+          </div>
+
+          <div className="analytics-card">
+            <h3>{analytics.activeJobs}</h3>
+            <p>Active Jobs</p>
+          </div>
+        </div>
+
+        <div className="top-skills-card">
+          <h3>Top Applicant Skills</h3>
+
+          {analytics.topSkills.length === 0 ? (
+            <p>No applicant skills yet.</p>
+          ) : (
+            <div className="top-skills-list">
+              {analytics.topSkills.map((item) => (
+                <span key={item.skill}>
+                  {item.skill} <b>{item.count}</b>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="jobs-list">
           {jobs.map((job) => {
             const alreadyApplied = job.applicants?.some(
-              (applicant) => applicant._id === user._id
+              (applicant) => applicant._id === user._id,
             );
 
             const isOwner = job.recruiter?._id === user._id;
@@ -172,9 +233,7 @@ function Recruiter() {
                       {job.company} • {job.location} • {job.jobType}
                     </p>
 
-                    <small>
-                      Posted by {job.recruiter?.name}
-                    </small>
+                    <small>Posted by {job.recruiter?.name}</small>
                   </div>
 
                   {isOwner && (
@@ -207,13 +266,9 @@ function Recruiter() {
 
                 {isOwner && (
                   <div className="applicants-box">
-                    <h4>
-                      Applicants ({job.applicants?.length || 0})
-                    </h4>
+                    <h4>Applicants ({job.applicants?.length || 0})</h4>
 
-                    {job.applicants?.length === 0 && (
-                      <p>No applicants yet.</p>
-                    )}
+                    {job.applicants?.length === 0 && <p>No applicants yet.</p>}
 
                     {job.applicants?.map((applicant) => (
                       <div
@@ -226,10 +281,7 @@ function Recruiter() {
                         >
                           <div className="mini-avatar">
                             {applicant.avatar ? (
-                              <img
-                                src={applicant.avatar}
-                                alt="avatar"
-                              />
+                              <img src={applicant.avatar} alt="avatar" />
                             ) : (
                               applicant.name?.charAt(0)
                             )}
@@ -255,9 +307,7 @@ function Recruiter() {
                           />
 
                           <button
-                            onClick={() =>
-                              handleDirectMessage(applicant._id)
-                            }
+                            onClick={() => handleDirectMessage(applicant._id)}
                           >
                             Send
                           </button>

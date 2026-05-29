@@ -3544,3 +3544,67 @@ select:focus {
   font-weight: 900;
   color: white;
 }
+
+/* PHASE 13E — RECRUITER ANALYTICS */
+
+.recruiter-analytics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.analytics-card,
+.top-skills-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 35px var(--shadow);
+  border-radius: 24px;
+  padding: 22px;
+}
+
+.analytics-card h3 {
+  font-size: 34px;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.analytics-card p,
+.top-skills-card p {
+  color: var(--text-soft);
+  font-weight: 800;
+}
+
+.top-skills-card {
+  margin-bottom: 22px;
+}
+
+.top-skills-card h3 {
+  color: var(--text-main);
+  margin-bottom: 14px;
+}
+
+.top-skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.top-skills-list span {
+  background: color-mix(in srgb, var(--primary) 16%, var(--bg-soft));
+  color: var(--primary);
+  padding: 9px 13px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.top-skills-list b {
+  margin-left: 6px;
+  color: var(--text-main);
+}
+
+@media (max-width: 768px) {
+  .recruiter-analytics {
+    grid-template-columns: 1fr;
+  }
+}
