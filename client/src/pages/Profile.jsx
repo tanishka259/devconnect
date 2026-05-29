@@ -5,6 +5,8 @@ import MainLayout from "../layouts/MainLayout";
 import GitHubStats from "../components/profile/GitHubStats";
 import PostCard from "./feed/PostCard";
 
+const API_URL = "https://devconnect-api-hwvw.onrender.com";
+
 function Profile() {
   const storedUser = JSON.parse(localStorage.getItem("user"));
 
@@ -20,20 +22,20 @@ function Profile() {
   const [aiReview, setAiReview] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
+  const getPublicLink = () => {
+    const username = profile?.username || storedUser?.username || storedUser?._id;
+    return `${window.location.origin}/dev/${username}`;
+  };
+
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(
-        `https://devconnect-api-hwvw.onrender.com/api/users/${storedUser._id}`,
-      );
-
-      const postsResponse = await axios.get(
-        "https://devconnect-api-hwvw.onrender.com/api/posts",
-      );
+      const response = await axios.get(`${API_URL}/api/users/${storedUser._id}`);
+      const postsResponse = await axios.get(`${API_URL}/api/posts`);
 
       setProfile(response.data);
 
       setMyPosts(
-        postsResponse.data.filter((post) => post.user?._id === storedUser._id),
+        postsResponse.data.filter((post) => post.user?._id === storedUser._id)
       );
 
       setBio(response.data.bio || "");
@@ -50,10 +52,8 @@ function Profile() {
     try {
       setAiLoading(true);
 
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-
       const response = await axios.post(
-        `https://devconnect-api-hwvw.onrender.com/api/ai/portfolio-review/${storedUser._id}`,
+        `${API_URL}/api/ai/portfolio-review/${storedUser._id}`
       );
 
       setAiReview(response.data.review);
@@ -76,19 +76,15 @@ function Profile() {
         .map((skill) => skill.trim())
         .filter((skill) => skill !== "");
 
-      const response = await axios.put(
-        `https://devconnect-api-hwvw.onrender.com/api/users/${storedUser._id}`,
-        {
-          bio,
-          skills: skillsArray,
-          githubUsername,
-          location,
-          role,
-        },
-      );
+      const response = await axios.put(`${API_URL}/api/users/${storedUser._id}`, {
+        bio,
+        skills: skillsArray,
+        githubUsername,
+        location,
+        role,
+      });
 
       localStorage.setItem("user", JSON.stringify(response.data.user));
-
       setProfile(response.data.user);
 
       alert("Profile updated successfully");
@@ -104,16 +100,14 @@ function Profile() {
     if (!file) return;
 
     const formData = new FormData();
-
     formData.append("avatar", file);
 
     const response = await axios.post(
-      `https://devconnect-api-hwvw.onrender.com/api/users/${storedUser._id}/avatar`,
-      formData,
+      `${API_URL}/api/users/${storedUser._id}/avatar`,
+      formData
     );
 
     localStorage.setItem("user", JSON.stringify(response.data.user));
-
     setProfile(response.data.user);
 
     alert("Profile photo updated");
@@ -187,20 +181,11 @@ function Profile() {
           <div className="share-link-card">
             <h3>Public Portfolio Link</h3>
 
-            <input
-              readOnly
-              value={`${window.location.origin}/dev/${
-                profile?.username || storedUser?.username || storedUser?._id
-              }`}
-            />
+            <input readOnly value={getPublicLink()} />
 
             <button
               onClick={() => {
-                navigator.clipboard.writeText(
-                  `${window.location.origin}/dev/${
-                    profile?.username || storedUser?.username || storedUser?._id
-                  }`,
-                );
+                navigator.clipboard.writeText(getPublicLink());
                 alert("Link copied!");
               }}
             >
@@ -208,7 +193,6 @@ function Profile() {
             </button>
           </div>
 
-          
           <label>Bio</label>
           <textarea
             placeholder="Write something about yourself..."
