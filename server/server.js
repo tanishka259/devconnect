@@ -1504,7 +1504,7 @@ app.get("/api/dev/:identifier", async (req, res) => {
 
 //temporary
 
-app.put("/api/users/generate-usernames/all", async (req, res) => {
+app.get("/api/users/generate-usernames/all", async (req, res) => {
   try {
     const users = await User.find();
 
