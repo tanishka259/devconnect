@@ -148,8 +148,8 @@ function App() {
           }
         />
 
-        <Route path="/dev/:username" element={<DevProfile />} />
-        
+        <Route path="/dev/:id" element={<DevProfile />} />
+
       </Routes>
     </BrowserRouter>
   );
