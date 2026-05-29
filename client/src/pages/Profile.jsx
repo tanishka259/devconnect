@@ -184,6 +184,25 @@ function Profile() {
             onChange={(e) => setRole(e.target.value)}
           />
 
+          <div className="share-link-card">
+            <h3>Public Portfolio Link</h3>
+
+            <input
+              readOnly
+              value={`${window.location.origin}/dev/${user.username}`}
+            />
+
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `${window.location.origin}/dev/${user.username}`,
+                );
+              }}
+            >
+              Copy Link
+            </button>
+          </div>
+
           <label>Bio</label>
           <textarea
             placeholder="Write something about yourself..."

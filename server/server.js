@@ -71,11 +71,15 @@ app.post("/api/register", async (req, res) => {
       });
     }
 
+    const username =
+      name.toLowerCase().replace(/\s+/g, "") + Math.floor(Math.random() * 1000);
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email,
+      username,
       password: hashedPassword,
     });
 
@@ -756,7 +760,7 @@ app.put("/api/messages/read/:userId/:senderId", async (req, res) => {
       },
       {
         isRead: true,
-      }
+      },
     );
 
     res.json({
@@ -1383,12 +1387,10 @@ app.get("/api/recruiter/analytics/:recruiterId", async (req, res) => {
 
     const totalApplicants = jobs.reduce(
       (sum, job) => sum + job.applicants.length,
-      0
+      0,
     );
 
-    const activeJobs = jobs.filter(
-      (job) => job.applicants.length < 10
-    ).length;
+    const activeJobs = jobs.filter((job) => job.applicants.length < 10).length;
 
     const skillMap = {};
 
@@ -1458,6 +1460,42 @@ app.get("/api/search/:query", async (req, res) => {
   } catch (error) {
     console.log("Search error:", error);
     res.status(500).json({ message: "Search error" });
+  }
+});
+
+/* PUBLIC DEV PROFILE */
+
+app.get("/api/dev/:username", async (req, res) => {
+  try {
+    const user = await User.findOne({
+      username: req.params.username,
+    }).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Developer not found",
+      });
+    }
+
+    const projects = await Project.find({
+      user: user._id,
+    });
+
+    const snippets = await Snippet.find({
+      user: user._id,
+    });
+
+    res.json({
+      user,
+      projects,
+      snippets,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error fetching developer profile",
+    });
   }
 });
 

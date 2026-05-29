@@ -13,6 +13,12 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
 
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
     password: {
       type: String,
       required: true,
@@ -49,38 +55,34 @@ const userSchema = new mongoose.Schema(
     },
 
     connections: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-],
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
 
-savedPosts: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Post",
-  },
-],
+    savedPosts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
 
-lastSeen: {
-  type: Date,
-  default: Date.now,
-},
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
 
-connectionRequests: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-],
+    connectionRequests: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
-  }
-
-  
+  },
 );
-
-
 
 module.exports = mongoose.model("User", userSchema);

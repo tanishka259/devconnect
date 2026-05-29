@@ -16,6 +16,7 @@ import Search from "./pages/Search";
 import AddPost from "./pages/AddPost";
 import Notifications from "./pages/Notifications";
 import SavedPosts from "./pages/SavedPosts";
+import DevProfile from "./pages/DevProfile";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -146,6 +147,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/dev/:username" element={<DevProfile />} />
+        
       </Routes>
     </BrowserRouter>
   );
