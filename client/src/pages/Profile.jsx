@@ -23,19 +23,22 @@ function Profile() {
   const [aiLoading, setAiLoading] = useState(false);
 
   const getPublicLink = () => {
-    const username = profile?.username || storedUser?.username || storedUser?._id;
+    const username =
+      profile?.username || storedUser?.username || storedUser?._id;
     return `${window.location.origin}/dev/${username}`;
   };
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/users/${storedUser._id}`);
+      const response = await axios.get(
+        `${API_URL}/api/users/${storedUser._id}`,
+      );
       const postsResponse = await axios.get(`${API_URL}/api/posts`);
 
       setProfile(response.data);
 
       setMyPosts(
-        postsResponse.data.filter((post) => post.user?._id === storedUser._id)
+        postsResponse.data.filter((post) => post.user?._id === storedUser._id),
       );
 
       setBio(response.data.bio || "");
@@ -53,7 +56,7 @@ function Profile() {
       setAiLoading(true);
 
       const response = await axios.post(
-        `${API_URL}/api/ai/portfolio-review/${storedUser._id}`
+        `${API_URL}/api/ai/portfolio-review/${storedUser._id}`,
       );
 
       setAiReview(response.data.review);
@@ -76,13 +79,16 @@ function Profile() {
         .map((skill) => skill.trim())
         .filter((skill) => skill !== "");
 
-      const response = await axios.put(`${API_URL}/api/users/${storedUser._id}`, {
-        bio,
-        skills: skillsArray,
-        githubUsername,
-        location,
-        role,
-      });
+      const response = await axios.put(
+        `${API_URL}/api/users/${storedUser._id}`,
+        {
+          bio,
+          skills: skillsArray,
+          githubUsername,
+          location,
+          role,
+        },
+      );
 
       localStorage.setItem("user", JSON.stringify(response.data.user));
       setProfile(response.data.user);
@@ -104,7 +110,7 @@ function Profile() {
 
     const response = await axios.post(
       `${API_URL}/api/users/${storedUser._id}/avatar`,
-      formData
+      formData,
     );
 
     localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -181,18 +187,24 @@ function Profile() {
           <div className="share-link-card">
             <h3>Public Portfolio Link</h3>
 
-            <input readOnly value={getPublicLink()} />
+            <div className="share-link-row">
+              <input readOnly value={getPublicLink()} />
 
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(getPublicLink());
-                alert("Link copied!");
-              }}
-            >
-              Copy Link
-            </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(getPublicLink());
+                  alert("Link copied!");
+                }}
+              >
+                Copy
+              </button>
+            </div>
+
+            <p>
+              Share this link with recruiters to show your public developer
+              portfolio.
+            </p>
           </div>
-
           <label>Bio</label>
           <textarea
             placeholder="Write something about yourself..."
