@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import "../App.css"
 
 const API_URL = "https://devconnect-api-hwvw.onrender.com";
+
+const selectedTheme = localStorage.getItem("theme")||"black";
 
 function DevProfile() {
   const { id } = useParams();
@@ -28,6 +31,7 @@ function DevProfile() {
   }
 
   return (
+    <div className={`theme-${selectedTheme}`}>
     <div className="public-dev-page">
       <div className="public-profile-card">
         <div className="avatar large-avatar">
@@ -42,7 +46,7 @@ function DevProfile() {
         <p>{data.user.role || "Developer"}</p>
         <p>{data.user.bio || "No bio added yet."}</p>
 
-        <div className="search-skill-tags">
+        <div className="public-skills">
           {data.user.skills?.map((skill, index) => (
             <span key={index}>{skill}</span>
           ))}
@@ -74,6 +78,7 @@ function DevProfile() {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 }

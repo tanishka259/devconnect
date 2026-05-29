@@ -3662,3 +3662,64 @@ select:focus {
     width: 100%;
   }
 }
+
+.public-dev-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: var(--bg-main);
+}
+
+.public-profile-card,
+.public-section {
+  max-width: 900px;
+  margin: 25px auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 12px 35px var(--shadow);
+}
+
+.public-profile-card {
+  text-align: center;
+}
+
+.public-profile-card .large-avatar {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--primary);
+}
+
+.public-profile-card .large-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.public-profile-card h1 {
+  font-size: 40px;
+  color: var(--text-main);
+}
+
+.public-profile-card p,
+.public-section p {
+  color: var(--text-soft);
+}
+
+.public-skills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.public-skills span {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  color: white;
+  font-weight: 800;
+}
