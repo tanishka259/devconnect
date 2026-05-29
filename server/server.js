@@ -71,8 +71,14 @@ app.post("/api/register", async (req, res) => {
       });
     }
 
-    const username =
-      name.toLowerCase().replace(/\s+/g, "") + Math.floor(Math.random() * 1000);
+    const baseUsername = name.toLowerCase().replace(/\s+/g, "");
+    let username = baseUsername;
+    let count = 1;
+
+    while (await User.findOne({ username })) {
+      username = `${baseUsername}${count}`;
+      count++;
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -1465,9 +1471,14 @@ app.get("/api/search/:query", async (req, res) => {
 
 /* PUBLIC DEV PROFILE */
 
-app.get("/api/dev/:id", async (req, res) => {
+app.get("/api/dev/:identifier", async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const { identifier } = req.params;
+
+    const user =
+      identifier.length === 24
+        ? await User.findById(identifier).select("-password")
+        : await User.findOne({ username: identifier }).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -1475,13 +1486,8 @@ app.get("/api/dev/:id", async (req, res) => {
       });
     }
 
-    const projects = await Project.find({
-      user: user._id,
-    });
-
-    const snippets = await Snippet.find({
-      user: user._id,
-    });
+    const projects = await Project.find({ user: user._id });
+    const snippets = await Snippet.find({ user: user._id });
 
     res.json({
       user,
@@ -1493,6 +1499,39 @@ app.get("/api/dev/:id", async (req, res) => {
     res.status(500).json({
       message: "Error fetching developer profile",
     });
+  }
+});
+
+//temporary
+
+app.put("/api/users/generate-usernames/all", async (req, res) => {
+  try {
+    const users = await User.find();
+
+    for (const user of users) {
+      if (!user.username) {
+        const baseUsername = user.name
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .replace(/[^a-z0-9]/g, "");
+
+        let username = baseUsername || `user${user._id.toString().slice(-5)}`;
+        let count = 1;
+
+        while (await User.findOne({ username })) {
+          username = `${baseUsername}${count}`;
+          count++;
+        }
+
+        user.username = username;
+        await user.save();
+      }
+    }
+
+    res.json({ message: "Usernames generated" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Username generation failed" });
   }
 });
 
