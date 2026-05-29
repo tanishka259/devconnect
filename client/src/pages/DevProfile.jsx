@@ -5,8 +5,6 @@ import "../App.css"
 
 const API_URL = "https://devconnect-api-hwvw.onrender.com";
 
-const selectedTheme = localStorage.getItem("theme")||"black";
-
 function DevProfile() {
   const { id } = useParams();
   const [data, setData] = useState(null);
@@ -23,6 +21,11 @@ function DevProfile() {
   };
 
   useEffect(() => {
+    const selectedTheme = localStorage.getItem("theme")||"black";
+
+    document.body.className="";
+    document.body.classList.add(`theme-${savedTheme}`)
+
     fetchProfile();
   }, [id]);
 
@@ -31,7 +34,6 @@ function DevProfile() {
   }
 
   return (
-    <div className={`theme-${selectedTheme}`}>
     <div className="public-dev-page">
       <div className="public-profile-card">
         <div className="avatar large-avatar">
@@ -79,7 +81,7 @@ function DevProfile() {
         ))}
       </div>
     </div>
-    </div>
+   
   );
 }
 
