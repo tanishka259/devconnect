@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+const API_URL = "https://devconnect-api-hwvw.onrender.com";
+
+
 import MainLayout from "../layouts/MainLayout";
 
 function Recruiter() {
