@@ -1426,6 +1426,41 @@ app.get("/api/recruiter/analytics/:recruiterId", async (req, res) => {
   }
 });
 
+/* SMART SEARCH */
+
+app.get("/api/search/:query", async (req, res) => {
+  try {
+    const query = req.params.query;
+
+    const users = await User.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { role: { $regex: query, $options: "i" } },
+        { skills: { $regex: query, $options: "i" } },
+      ],
+    }).select("-password");
+
+    const posts = await Post.find({
+      content: { $regex: query, $options: "i" },
+    })
+      .populate("user", "name avatar role")
+      .limit(10);
+
+    const projects = await Project.find({
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+        { tech: { $regex: query, $options: "i" } },
+      ],
+    }).limit(10);
+
+    res.json({ users, posts, projects });
+  } catch (error) {
+    console.log("Search error:", error);
+    res.status(500).json({ message: "Search error" });
+  }
+});
+
 /* SOCKET.IO */
 
 const onlineUsers = new Map();

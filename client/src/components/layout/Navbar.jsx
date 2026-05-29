@@ -13,7 +13,7 @@ function Navbar() {
 
     if (!query.trim()) return;
 
-    navigate(`/search?q=${query}`);
+    navigate(`/search?q=${encodeURIComponent(query)}`);
     setQuery("");
   };
 
