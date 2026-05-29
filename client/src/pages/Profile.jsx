@@ -189,20 +189,26 @@ function Profile() {
 
             <input
               readOnly
-              value={`${window.location.origin}/dev/${user.username}`}
+              value={`${window.location.origin}/dev/${
+                profile?.username || storedUser?.username || storedUser?._id
+              }`}
             />
 
             <button
               onClick={() => {
                 navigator.clipboard.writeText(
-                  `${window.location.origin}/dev/${user.username}`,
+                  `${window.location.origin}/dev/${
+                    profile?.username || storedUser?.username || storedUser?._id
+                  }`,
                 );
+                alert("Link copied!");
               }}
             >
               Copy Link
             </button>
           </div>
 
+          
           <label>Bio</label>
           <textarea
             placeholder="Write something about yourself..."
