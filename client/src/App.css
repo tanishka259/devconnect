@@ -3665,61 +3665,106 @@ select:focus {
 
 .public-dev-page {
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: 50px 20px;
   background: var(--bg-main);
+  color: var(--text-main);
+}
+
+.public-loading {
+  color: var(--text-main);
+  text-align: center;
 }
 
 .public-profile-card,
 .public-section {
   max-width: 900px;
-  margin: 25px auto;
+  margin: 0 auto 25px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 28px;
-  padding: 28px;
-  box-shadow: 0 12px 35px var(--shadow);
+  box-shadow: 0 14px 40px var(--shadow);
+  border-radius: 32px;
+  padding: 35px;
 }
 
 .public-profile-card {
   text-align: center;
 }
 
-.public-profile-card .large-avatar {
-  width: 130px;
-  height: 130px;
+.public-avatar {
+  width: 135px;
+  height: 135px;
   margin: 0 auto 18px;
   border-radius: 50%;
   overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  font-size: 42px;
+  font-weight: 900;
   border: 4px solid var(--primary);
 }
 
-.public-profile-card .large-avatar img {
+.public-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .public-profile-card h1 {
-  font-size: 40px;
   color: var(--text-main);
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.public-profile-card h4 {
+  color: var(--primary);
+  margin-bottom: 12px;
 }
 
 .public-profile-card p,
-.public-section p {
+.public-section p,
+.public-skills small {
   color: var(--text-soft);
+  font-weight: 700;
 }
 
 .public-skills {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
+  margin-top: 16px;
 }
 
 .public-skills span {
-  padding: 8px 14px;
-  border-radius: 999px;
   background: linear-gradient(90deg, var(--primary), var(--secondary));
   color: white;
-  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.public-section h2 {
+  color: var(--text-main);
+  margin-bottom: 18px;
+}
+
+.public-project-card,
+.public-snippet-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 18px;
+  margin-top: 14px;
+}
+
+.public-project-card h3,
+.public-snippet-card h3 {
+  color: var(--text-main);
+}
+
+.public-snippet-card pre {
+  white-space: pre-wrap;
+  color: var(--text-main);
 }
